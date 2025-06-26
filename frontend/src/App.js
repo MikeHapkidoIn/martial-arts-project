@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { martialArtsAPI } from './services/api';
-import './index.css';
+import './styles/index.css';
 
 function App() {
   const [martialArts, setMartialArts] = useState([]);
