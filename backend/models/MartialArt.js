@@ -1,5 +1,4 @@
 // /backend/models/MartialArt.js
-
 const mongoose = require('mongoose');
 
 const martialArtSchema = new mongoose.Schema({
@@ -35,7 +34,10 @@ const martialArtSchema = new mongoose.Schema({
   tipoContacto: { 
     type: String, 
     required: [true, 'El tipo de contacto es requerido'],
-    enum: ['Contacto completo', 'Semi-contacto', 'No-contacto', 'Suave', 'Variable']
+    enum: {
+      values: ['Contacto completo', 'Semi-contacto', 'No-contacto', 'Suave', 'Variable'],
+      message: '{VALUE} no es un tipo de contacto válido'
+    }
   },
   focus: { 
     type: String, 
@@ -53,7 +55,10 @@ const martialArtSchema = new mongoose.Schema({
   demandasFisicas: { 
     type: String, 
     required: [true, 'Las demandas físicas son requeridas'],
-    enum: ['Baja', 'Baja-Media', 'Media', 'Media-Alta', 'Alta', 'Muy alta']
+    enum: {
+      values: ['Baja', 'Baja-Media', 'Media', 'Media-Alta', 'Alta', 'Muy alta', 'Variable'],
+      message: '{VALUE} no es una demanda física válida'
+    }
   },
   tecnicas: {
     type: [String],

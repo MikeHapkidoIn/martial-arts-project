@@ -1,6 +1,22 @@
-// /backend/data/initialData.js
+// /backend/data/initialData.js - Versión Corregida
 
 const initialMartialArts = [
+  {
+    nombre: "Jeet Kune Do",
+    paisProcedencia: "Estados Unidos",
+    edadOrigen: "1960s",
+    tipo: "Filosofía de combate",
+    distanciasTrabajadas: ["Todas"],
+    armas: ["Variable"],
+    tipoContacto: "Variable",
+    focus: "Adaptabilidad total",
+    fortalezas: ["Flexibilidad", "Economía de movimiento", "Interceptación"],
+    debilidades: ["No estandarizado", "Requiere experiencia previa"],
+    demandasFisicas: "Variable", // ← Cambiado a "Variable"
+    tecnicas: ["Interceptación", "Trapping", "Combinaciones", "Adaptación"],
+    filosofia: "Sin limitaciones, absorber lo útil",
+    historia: "Filosofía de combate creada por Bruce Lee que rechaza las formas rígidas. Enfatiza la adaptabilidad, eficiencia y la absorción de técnicas útiles de cualquier arte marcial, siendo más una filosofía que un estilo fijo."
+  },
   {
     nombre: "Hapkido",
     paisProcedencia: "Corea del Sur",
@@ -15,7 +31,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Llaves articulares", "Proyecciones", "Patadas circulares", "Puntos de presión"],
     filosofia: "Armonía de mente, cuerpo y espíritu",
-    historia: "El Hapkido fue desarrollado en los años 1950 por Choi Yong-sool después de su regreso de Japón. Combina técnicas del Daito-ryu Aiki-jujutsu japonés con elementos coreanos tradicionales. Se enfoca en la redirección de la fuerza del atacante y el uso de técnicas circulares."
+    historia: "El Hapkido fue desarrollado en los años 1950 por Choi Yong-sool después de su regreso de Japón. Combina técnicas del Daito-ryu Aiki-jujutsu japonés con elementos coreanos tradicionales."
   },
   {
     nombre: "Taekwondo",
@@ -31,7 +47,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Patadas saltando", "Patadas giratorias", "Bloqueos", "Formas (Poomsae)"],
     filosofia: "Disciplina, respeto y perseverancia",
-    historia: "Desarrollado en la década de 1940-1950, el Taekwondo unificó varias escuelas de artes marciales coreanas. Se convirtió en deporte olímpico en 2000. Enfatiza las patadas espectaculares y la competición deportiva."
+    historia: "Desarrollado en la década de 1940-1950, el Taekwondo unificó varias escuelas de artes marciales coreanas."
   },
   {
     nombre: "Kuk Sool Won",
@@ -47,7 +63,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Técnicas de mano", "Patadas", "Llaves", "Armas tradicionales"],
     filosofia: "Preservación de artes marciales coreanas tradicionales",
-    historia: "Fundado por In Hyuk Suh en 1958, Kuk Sool Won es un sistema completo que preserva las artes marciales tradicionales coreanas incluyendo técnicas de palacio real, monjes budistas y familias tribales."
+    historia: "Fundado por In Hyuk Suh en 1958, Kuk Sool Won es un sistema completo que preserva las artes marciales tradicionales coreanas."
   },
   {
     nombre: "Krav Maga",
@@ -63,7 +79,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Golpes directos", "Defensa contra armas", "Escapes", "Contraataques"],
     filosofia: "Neutralizar la amenaza lo más rápido posible",
-    historia: "Desarrollado por Imi Lichtenfeld para las fuerzas de defensa israelíes. Se basa en movimientos naturales del cuerpo humano y técnicas de varios artes marciales, diseñado para situaciones de vida o muerte."
+    historia: "Desarrollado por Imi Lichtenfeld para las fuerzas de defensa israelíes."
   },
   {
     nombre: "Sumo",
@@ -79,7 +95,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Empujes", "Levantamientos", "Barridos", "Proyecciones"],
     filosofia: "Pureza, disciplina y ritual sintoísta",
-    historia: "Originado como ritual religioso sintoísta, el Sumo es uno de los deportes más antiguos de Japón. Los luchadores (rikishi) viven en establos entrenando bajo estrictas tradiciones que se mantienen desde hace siglos."
+    historia: "Originado como ritual religioso sintoísta, el Sumo es uno de los deportes más antiguos de Japón."
   },
   {
     nombre: "Sambo",
@@ -95,7 +111,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Proyecciones", "Sumisiones", "Técnicas de pierna", "Defensa personal"],
     filosofia: "Autodefensa sin armas",
-    historia: "Desarrollado en la URSS en los años 1920, combinando judo, wrestling nativo y otras técnicas de lucha. Significa 'autodefensa sin armas' en ruso. Tiene dos variantes: Sport Sambo y Combat Sambo."
+    historia: "Desarrollado en la URSS en los años 1920, combinando judo, wrestling nativo y otras técnicas de lucha."
   },
   {
     nombre: "Sanda",
@@ -111,7 +127,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Puñetazos", "Patadas", "Proyecciones", "Barridos"],
     filosofia: "Combate efectivo moderno",
-    historia: "Desarrollado en China en los años 1960 como la versión deportiva del kung fu. Combina técnicas de striking con projecciones y takedowns, usado por el ejército chino y en competiciones internacionales."
+    historia: "Desarrollado en China en los años 1960 como la versión deportiva del kung fu."
   },
   {
     nombre: "Kung Fu",
@@ -127,7 +143,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Formas animales", "Técnicas internas", "Armas tradicionales", "Meditación"],
     filosofia: "Armonía entre cielo, tierra y humanidad",
-    historia: "Con más de 1500 años de historia, el Kung Fu abarca cientos de estilos diferentes. Desarrollado en el templo Shaolin y otros monasterios, combina técnicas de combate con filosofía budista y taoísta."
+    historia: "Con más de 1500 años de historia, el Kung Fu abarca cientos de estilos diferentes."
   },
   {
     nombre: "Wushu",
@@ -136,14 +152,14 @@ const initialMartialArts = [
     tipo: "Arte marcial deportivo",
     distanciasTrabajadas: ["Todas"],
     armas: ["Espada", "Bastón", "Lanza", "Sable"],
-    tipoContacto: "No-contacto (formas)",
+    tipoContacto: "No-contacto",
     focus: "Exhibición y competición",
     fortalezas: ["Espectacularidad", "Atletismo", "Precisión"],
     debilidades: ["Menos aplicación práctica", "Muy acrobático"],
     demandasFisicas: "Muy alta",
     tecnicas: ["Saltos", "Patadas voladoras", "Formas", "Armas"],
     filosofia: "Expresión artística del combate",
-    historia: "Versión moderna y deportiva del kung fu tradicional, desarrollada en China en los años 1950. Enfatiza la belleza estética y el atletismo, con competiciones internacionales que incluyen formas y combate."
+    historia: "Versión moderna y deportiva del kung fu tradicional, desarrollada en China en los años 1950."
   },
   {
     nombre: "Tai Chi",
@@ -159,7 +175,7 @@ const initialMartialArts = [
     demandasFisicas: "Baja-Media",
     tecnicas: ["Movimientos lentos", "Empuje de manos", "Formas", "Respiración"],
     filosofia: "Equilibrio del yin y yang",
-    historia: "Desarrollado por la familia Chen en el siglo XVII, el Tai Chi se basa en principios taoístas. Aunque es un arte marcial efectivo, hoy se practica principalmente por sus beneficios para la salud y la meditación en movimiento."
+    historia: "Desarrollado por la familia Chen en el siglo XVII, el Tai Chi se basa en principios taoístas."
   },
   {
     nombre: "Muay Thai",
@@ -175,7 +191,7 @@ const initialMartialArts = [
     demandasFisicas: "Muy alta",
     tecnicas: ["Patadas con espinilla", "Rodillazos", "Codazos", "Clinch"],
     filosofia: "Honor, respeto y tradición tailandesa",
-    historia: "Conocido como 'El Arte de las Ocho Extremidades', el Muay Thai se desarrolló como arte marcial del ejército siamés. Combina rituales tradicionales con técnicas devastadoras de striking usando puños, codos, rodillas y espinillas."
+    historia: "Conocido como 'El Arte de las Ocho Extremidades', el Muay Thai se desarrolló como arte marcial del ejército siamés."
   },
   {
     nombre: "Pencak Silat",
@@ -191,7 +207,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Golpes angulares", "Barridos", "Palancas", "Armas blancas"],
     filosofia: "Armonía espiritual y física",
-    historia: "Arte marcial del archipiélago indonesio con cientos de estilos regionales. Desarrollado por guerreros malayos, combina técnicas de combate con elementos espirituales y culturales únicos de cada región."
+    historia: "Arte marcial del archipiélago indonesio con cientos de estilos regionales."
   },
   {
     nombre: "Karate",
@@ -207,7 +223,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Puñetazos directos", "Patadas", "Bloqueos", "Katas"],
     filosofia: "Perfeccionamiento del carácter",
-    historia: "Originado en Okinawa combinando técnicas chinas con métodos locales. Introducido a Japón en el siglo XX, desarrolló múltiples estilos como Shotokan, Kyokushin, y Goju-Ryu, cada uno con enfoques únicos."
+    historia: "Originado en Okinawa combinando técnicas chinas con métodos locales."
   },
   {
     nombre: "Aikido",
@@ -216,14 +232,14 @@ const initialMartialArts = [
     tipo: "Arte marcial moderno",
     distanciasTrabajadas: ["Corta", "Media"],
     armas: ["Bokken", "Jo", "Tanto"],
-    tipoContacto: "No-contacto/suave",
+    tipoContacto: "No-contacto",
     focus: "Neutralización pacífica",
     fortalezas: ["Uso de la fuerza del oponente", "Filosofía pacífica", "Técnicas circulares"],
     debilidades: ["Menos efectivo contra resistencia", "Requiere mucha práctica"],
     demandasFisicas: "Media",
     tecnicas: ["Proyecciones circulares", "Inmovilizaciones", "Desarmes", "Respiración"],
     filosofia: "Armonía y no-violencia",
-    historia: "Desarrollado por Morihei Ueshiba, combina técnicas del jujutsu con filosofía espiritual. Enfatiza la neutralización del conflicto sin causar daño al atacante, buscando la armonía universal."
+    historia: "Desarrollado por Morihei Ueshiba, combina técnicas del jujutsu con filosofía espiritual."
   },
   {
     nombre: "Kendo",
@@ -232,14 +248,14 @@ const initialMartialArts = [
     tipo: "Arte marcial con espada",
     distanciasTrabajadas: ["Media", "Larga"],
     armas: ["Shinai", "Bokken"],
-    tipoContacto: "Contacto con protección",
+    tipoContacto: "Contacto completo",
     focus: "Esgrima japonesa",
     fortalezas: ["Precisión", "Velocidad", "Disciplina mental"],
     debilidades: ["Solo con espada", "Requiere equipo especial"],
     demandasFisicas: "Media-Alta",
     tecnicas: ["Cortes", "Estocadas", "Pasos", "Gritos (kiai)"],
     filosofia: "Camino de la espada y autodisciplina",
-    historia: "Evolución moderna del kenjutsu de los samurái, desarrollado como método seguro de entrenamiento con espada. Combina técnica, etiqueta y desarrollo espiritual a través de la práctica con shinai y armadura protectora."
+    historia: "Evolución moderna del kenjutsu de los samurái, desarrollado como método seguro de entrenamiento."
   },
   {
     nombre: "Iaido",
@@ -255,7 +271,7 @@ const initialMartialArts = [
     demandasFisicas: "Media",
     tecnicas: ["Desenvainar", "Cortar", "Limpiar", "Envainar"],
     filosofia: "Perfección a través de la repetición",
-    historia: "Arte de desenvainar y cortar con la katana en un solo movimiento fluido. Desarrollado por los samurái como respuesta a ataques sorpresa, hoy se practica como meditación en movimiento y preservación cultural."
+    historia: "Arte de desenvainar y cortar con la katana en un solo movimiento fluido."
   },
   {
     nombre: "Boxeo",
@@ -271,7 +287,7 @@ const initialMartialArts = [
     demandasFisicas: "Muy alta",
     tecnicas: ["Jab", "Cross", "Ganchos", "Uppercuts", "Esquivas"],
     filosofia: "Ciencia dulce y noble arte",
-    historia: "Codificado en Inglaterra con las reglas del Marqués de Queensberry en 1867. El boxeo moderno emphasiza la técnica, velocidad y resistencia, siendo uno de los deportes de combate más populares mundialmente."
+    historia: "Codificado en Inglaterra con las reglas del Marqués de Queensberry en 1867."
   },
   {
     nombre: "Kali",
@@ -287,7 +303,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Sinawali", "Desarmes", "Trapping", "Flujo continuo"],
     filosofia: "Adaptabilidad y fluidez",
-    historia: "Arte marcial indígena de Filipinas con técnicas desarrolladas por guerreros precoloniales. Enfatiza el combate con armas como extensión natural del cuerpo, con patrones de movimiento que fluyen entre diferentes herramientas."
+    historia: "Arte marcial indígena de Filipinas con técnicas desarrolladas por guerreros precoloniales."
   },
   {
     nombre: "Jiujutsu",
@@ -303,7 +319,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Proyecciones", "Estrangulaciones", "Luxaciones", "Golpes"],
     filosofia: "Arte suave que vence a la fuerza",
-    historia: "Arte marcial de los samurái para combate sin armas o cuando las armas principales fallaban. Desarrolló cientos de escuelas (ryu) diferentes, cada una con técnicas específicas para situaciones de combate particulares."
+    historia: "Arte marcial de los samurái para combate sin armas o cuando las armas principales fallaban."
   },
   {
     nombre: "Brazilian Jiujitsu",
@@ -319,23 +335,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Guardias", "Sumisiones", "Transiciones", "Escapes"],
     filosofia: "Técnica, timing y apalancamiento",
-    historia: "Desarrollado por la familia Gracie a partir del judo y jiujutsu japonés. Revolucionó las artes marciales al demostrar la efectividad del combate en el suelo y las técnicas de sumisión en competiciones como UFC."
-  },
-  {
-    nombre: "Jeet Kune Do",
-    paisProcedencia: "Estados Unidos",
-    edadOrigen: "1960s",
-    tipo: "Filosofía de combate",
-    distanciasTrabajadas: ["Todas"],
-    armas: ["Variable"],
-    tipoContacto: "Variable",
-    focus: "Adaptabilidad total",
-    fortalezas: ["Flexibilidad", "Economía de movimiento", "Interceptación"],
-    debilidades: ["No estandarizado", "Requiere experiencia previa"],
-    demandasFisicas: "Variable",
-    tecnicas: ["Interceptación", "Trapping", "Combinaciones", "Adaptación"],
-    filosofia: "Sin limitaciones, absorber lo útil",
-    historia: "Filosofía de combate creada por Bruce Lee que rechaza las formas rígidas. Enfatiza la adaptabilidad, eficiencia y la absorción de técnicas útiles de cualquier arte marcial, siendo más una filosofía que un estilo fijo."
+    historia: "Desarrollado por la familia Gracie a partir del judo y jiujutsu japonés."
   },
   {
     nombre: "Tang Soo Do",
@@ -351,7 +351,7 @@ const initialMartialArts = [
     demandasFisicas: "Media-Alta",
     tecnicas: ["Patadas", "Puñetazos", "Bloqueos", "Hyung (formas)"],
     filosofia: "Camino de la mano china",
-    historia: "Desarrollado por Hwang Kee, mantiene las tradiciones del karate y kung fu chino. A diferencia del taekwondo, preserva técnicas de mano y enfoque en formas tradicionales, resistiendo la comercialización deportiva."
+    historia: "Desarrollado por Hwang Kee, mantiene las tradiciones del karate y kung fu chino."
   },
   {
     nombre: "Judo",
@@ -367,7 +367,7 @@ const initialMartialArts = [
     demandasFisicas: "Alta",
     tecnicas: ["Proyecciones", "Inmovilizaciones", "Estrangulaciones", "Luxaciones"],
     filosofia: "Camino suave, máxima eficiencia",
-    historia: "Creado por Jigoro Kano como evolución moderna del jiujutsu. Primer arte marcial asiático en los Juegos Olímpicos (1964), enfatiza el desarrollo físico, mental y moral a través de la práctica deportiva."
+    historia: "Creado por Jigoro Kano como evolución moderna del jiujutsu."
   },
   {
     nombre: "Capoeira",
@@ -376,14 +376,14 @@ const initialMartialArts = [
     tipo: "Arte marcial cultural",
     distanciasTrabajadas: ["Media", "Larga"],
     armas: [],
-    tipoContacto: "No-contacto/suave",
+    tipoContacto: "No-contacto",
     focus: "Arte, música y movimiento",
     fortalezas: ["Creatividad", "Acrobacia", "Cultura rica"],
     debilidades: ["Menos efectivo en combate real", "No es agresivo"],
     demandasFisicas: "Alta",
     tecnicas: ["Ginga", "Esquivas", "Patadas acrobáticas", "Movimientos de suelo"],
     filosofia: "Libertad, expresión y comunidad",
-    historia: "Desarrollada por esclavos africanos en Brasil, combina arte marcial, danza, música y acrobacia. Disfrazada como danza para evitar prohibiciones, preservó tradiciones africanas y se convirtió en símbolo cultural brasileño."
+    historia: "Desarrollada por esclavos africanos en Brasil, combina arte marcial, danza, música y acrobacia."
   }
 ];
 

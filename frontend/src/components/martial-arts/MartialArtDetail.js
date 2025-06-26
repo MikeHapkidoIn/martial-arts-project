@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Clock, Target, Zap, AlertTriangle, Dumbbell } from 'lucide-react';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { martialArtsAPI } from '../../services/api';
+import { martialArtsAPI } from '../services/api';
 
 const MartialArtDetail = () => {
   const { id } = useParams();

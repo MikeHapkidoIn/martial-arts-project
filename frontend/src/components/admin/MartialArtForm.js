@@ -4,8 +4,8 @@ import { Save, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Header from '../common/Header';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { martialArtsAPI } from '../../services/api';
-import { CONTACT_TYPES, PHYSICAL_DEMANDS, MARTIAL_ART_TYPES } from '../../utils/constants';
+import { martialArtsAPI } from '../services/api';
+import { CONTACT_TYPES, PHYSICAL_DEMANDS, MARTIAL_ART_TYPES } from '../utils/constants';
 
 const MartialArtForm = ({ onRefresh }) => {
   const { id } = useParams();

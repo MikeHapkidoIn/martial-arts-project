@@ -1,5 +1,4 @@
 // /backend/server.js
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -26,7 +25,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rutas
+// Rutas principales
 app.use('/api/martial-arts', martialArtsRoutes);
 
 // Ruta de health check
@@ -34,22 +33,40 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV 
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// Middleware de manejo de errores
+// Ruta de bienvenida
+app.get('/', (req, res) => {
+  res.json({
+    message: 'API de Artes Marciales',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      martialArts: '/api/martial-arts'
+    }
+  });
+});
+
+// Middleware de manejo de errores (DEBE ir después de las rutas)
 app.use(errorHandler);
 
-// Manejar rutas no encontradas
+// Manejar rutas no encontradas (DEBE ir al final)
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
+  res.status(404).json({ 
+    success: false,
+    message: 'Ruta no encontrada',
+    requestedUrl: req.originalUrl
+  });
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🌍 Entorno: ${process.env.NODE_ENV}`);
+  console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 API disponible en: http://localhost:${PORT}/api`);
+  console.log(`💚 Health check: http://localhost:${PORT}/api/health`);
 });
+
 
 module.exports = app;

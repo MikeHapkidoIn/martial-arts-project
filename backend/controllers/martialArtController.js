@@ -1,7 +1,7 @@
 // /backend/controllers/martialArtController.js
-
 const MartialArt = require('../models/MartialArt');
 const initialData = require('../data/initialData');
+const mongoose = require('mongoose');
 
 // Obtener todas las artes marciales
 exports.getAllMartialArts = async (req, res, next) => {
@@ -20,7 +20,17 @@ exports.getAllMartialArts = async (req, res, next) => {
 // Obtener una arte marcial por ID
 exports.getMartialArtById = async (req, res, next) => {
   try {
-    const martialArt = await MartialArt.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Validar que sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID no válido'
+      });
+    }
+    
+    const martialArt = await MartialArt.findById(id);
     
     if (!martialArt) {
       return res.status(404).json({
@@ -56,8 +66,18 @@ exports.createMartialArt = async (req, res, next) => {
 // Actualizar arte marcial
 exports.updateMartialArt = async (req, res, next) => {
   try {
+    const { id } = req.params;
+    
+    // Validar ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID no válido'
+      });
+    }
+    
     const martialArt = await MartialArt.findByIdAndUpdate(
-      req.params.id,
+      id,
       req.body,
       { 
         new: true, 
@@ -85,7 +105,17 @@ exports.updateMartialArt = async (req, res, next) => {
 // Eliminar arte marcial
 exports.deleteMartialArt = async (req, res, next) => {
   try {
-    const martialArt = await MartialArt.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+    
+    // Validar ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID no válido'
+      });
+    }
+    
+    const martialArt = await MartialArt.findByIdAndDelete(id);
 
     if (!martialArt) {
       return res.status(404).json({
@@ -107,6 +137,13 @@ exports.deleteMartialArt = async (req, res, next) => {
 exports.searchMartialArts = async (req, res, next) => {
   try {
     const { term } = req.params;
+    
+    if (!term || term.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Término de búsqueda requerido'
+      });
+    }
     
     const martialArts = await MartialArt.find({
       $or: [
@@ -139,6 +176,16 @@ exports.compareMartialArts = async (req, res, next) => {
       });
     }
 
+    // Validar que todos los IDs sean válidos
+    const invalidIds = ids.filter(id => !mongoose.Types.ObjectId.isValid(id));
+    if (invalidIds.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'IDs no válidos encontrados',
+        invalidIds
+      });
+    }
+
     const martialArts = await MartialArt.find({ _id: { $in: ids } });
     
     res.json({
@@ -154,21 +201,31 @@ exports.compareMartialArts = async (req, res, next) => {
 // Inicializar datos
 exports.initializeData = async (req, res, next) => {
   try {
+    console.log('🔄 Iniciando carga de datos...');
+    
     const count = await MartialArt.countDocuments();
+    console.log(`📊 Documentos existentes: ${count}`);
     
     if (count === 0) {
-      await MartialArt.insertMany(initialData);
+      console.log('📥 Insertando datos iniciales...');
+      const result = await MartialArt.insertMany(initialData);
+      console.log(`✅ ${result.length} artes marciales insertadas`);
+      
       res.json({
         success: true,
-        message: `${initialData.length} artes marciales cargadas exitosamente`
+        message: `${result.length} artes marciales cargadas exitosamente`,
+        data: result
       });
     } else {
+      console.log('ℹ️ Los datos ya existen');
       res.json({
         success: true,
-        message: 'Los datos ya existen en la base de datos'
+        message: `Los datos ya existen en la base de datos. Total: ${count} artes marciales`,
+        count
       });
     }
   } catch (error) {
+    console.error('❌ Error en inicialización:', error);
     next(error);
   }
 };

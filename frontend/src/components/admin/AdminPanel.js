@@ -4,7 +4,7 @@ import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Header from '../common/Header';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { martialArtsAPI } from '../../services/api';
+import { martialArtsAPI } from '../services/api';
 
 const AdminPanel = ({ martialArts, loading, error, onRefresh }) => {
   const navigate = useNavigate();

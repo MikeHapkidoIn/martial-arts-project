@@ -1,5 +1,4 @@
 // /backend/routes/martialArts.js
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -13,14 +12,23 @@ const {
   initializeData
 } = require('../controllers/martialArtController');
 
-// Rutas
-router.get('/', getAllMartialArts);
+// ⚠️ IMPORTANTE: Las rutas específicas DEBEN ir ANTES que las rutas con parámetros
+// Si /:id va antes que /initialize, Express interpreta "initialize" como un ID
+
+// 1. Rutas POST específicas primero
+router.post('/initialize', initializeData);
+router.post('/compare', compareMartialArts);
+
+// 2. Rutas GET específicas antes de /:id
 router.get('/search/:term', searchMartialArts);
-router.get('/:id', getMartialArtById);
+
+// 3. Rutas básicas sin parámetros
+router.get('/', getAllMartialArts);
 router.post('/', createMartialArt);
+
+// 4. Rutas con parámetros ID AL FINAL
+router.get('/:id', getMartialArtById);
 router.put('/:id', updateMartialArt);
 router.delete('/:id', deleteMartialArt);
-router.post('/compare', compareMartialArts);
-router.post('/initialize', initializeData);
 
 module.exports = router;
