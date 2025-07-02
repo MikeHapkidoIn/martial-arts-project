@@ -1,105 +1,702 @@
+// /frontend/src/App.js - Versión completa con CRUD y todas las funcionalidades
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { martialArtsAPI } from './services/api';
 import './styles/index.css';
 
-function App() {
-  // Estados principales
+// Componente de Login
+const LoginForm = ({ onSwitchToRegister }) => {
+  const { login, isLoading, error } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await login({ email, password });
+    } catch (error) {
+      console.error('Error en login:', error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow">
+        <h2 className="text-2xl font-bold text-center mb-6">🔐 Iniciar Sesión</h2>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="admin@martialarts.com"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+            <div className="mt-1 relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Admin123!"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
+          
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          </button>
+        </form>
+        
+        <div className="mt-4 text-center">
+          <button
+            onClick={onSwitchToRegister}
+            className="text-blue-600 hover:text-blue-500"
+          >
+            ¿No tienes cuenta? Regístrate
+          </button>
+        </div>
+        
+        <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-center">
+          <strong>Credenciales de prueba:</strong><br />
+          Email: admin@martialarts.com<br />
+          Contraseña: Admin123!
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente de Registro
+const RegisterForm = ({ onSwitchToLogin }) => {
+  const { register, isLoading, error } = useAuth();
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellidos: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert('Las contraseñas no coinciden');
+      return;
+    }
+
+    try {
+      const { confirmPassword, ...registerData } = formData;
+      await register(registerData);
+    } catch (error) {
+      console.error('Error en registro:', error);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow">
+        <h2 className="text-2xl font-bold text-center mb-6">📝 Crear Cuenta</h2>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Nombre</label>
+              <input
+                name="nombre"
+                type="text"
+                required
+                value={formData.nombre}
+                onChange={handleChange}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Apellidos</label>
+              <input
+                name="apellidos"
+                type="text"
+                required
+                value={formData.apellidos}
+                onChange={handleChange}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              name="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+            <div className="mt-1 relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
+            <input
+              name="confirmPassword"
+              type="password"
+              required
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+              <p className="mt-1 text-sm text-red-600">Las contraseñas no coinciden</p>
+            )}
+          </div>
+          
+          <button
+            type="submit"
+            disabled={isLoading || formData.password !== formData.confirmPassword}
+            className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+          </button>
+        </form>
+        
+        <div className="mt-4 text-center">
+          <button
+            onClick={onSwitchToLogin}
+            className="text-blue-600 hover:text-blue-500"
+          >
+            ¿Ya tienes cuenta? Inicia sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modal para Crear/Editar Arte Marcial
+const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave }) => {
+  const [formData, setFormData] = useState({
+    nombre: '',
+    paisProcedencia: '',
+    edadOrigen: '',
+    tipo: '',
+    focus: '',
+    tipoContacto: '',
+    demandasFisicas: '',
+    filosofia: '',
+    fortalezas: [],
+    videos: []
+  });
+  const [newFortaleza, setNewFortaleza] = useState('');
+  const [newVideo, setNewVideo] = useState('');
+
+  useEffect(() => {
+    if (artToEdit) {
+      setFormData({
+        nombre: artToEdit.nombre || '',
+        paisProcedencia: artToEdit.paisProcedencia || '',
+        edadOrigen: artToEdit.edadOrigen || '',
+        tipo: artToEdit.tipo || '',
+        focus: artToEdit.focus || '',
+        tipoContacto: artToEdit.tipoContacto || '',
+        demandasFisicas: artToEdit.demandasFisicas || '',
+        filosofia: artToEdit.filosofia || '',
+        fortalezas: artToEdit.fortalezas || [],
+        videos: artToEdit.videos || []
+      });
+    } else {
+      setFormData({
+        nombre: '',
+        paisProcedencia: '',
+        edadOrigen: '',
+        tipo: '',
+        focus: '',
+        tipoContacto: '',
+        demandasFisicas: '',
+        filosofia: '',
+        fortalezas: [],
+        videos: []
+      });
+    }
+  }, [artToEdit, isOpen]);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const addFortaleza = () => {
+    if (newFortaleza.trim() && !formData.fortalezas.includes(newFortaleza.trim())) {
+      setFormData({
+        ...formData,
+        fortalezas: [...formData.fortalezas, newFortaleza.trim()]
+      });
+      setNewFortaleza('');
+    }
+  };
+
+  const removeFortaleza = (index) => {
+    setFormData({
+      ...formData,
+      fortalezas: formData.fortalezas.filter((_, i) => i !== index)
+    });
+  };
+
+  const addVideo = () => {
+    if (newVideo.trim() && !formData.videos.includes(newVideo.trim())) {
+      setFormData({
+        ...formData,
+        videos: [...formData.videos, newVideo.trim()]
+      });
+      setNewVideo('');
+    }
+  };
+
+  const removeVideo = (index) => {
+    setFormData({
+      ...formData,
+      videos: formData.videos.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">
+              {artToEdit ? '✏️ Editar Arte Marcial' : '➕ Nueva Arte Marcial'}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nombre *</label>
+                <input
+                  name="nombre"
+                  type="text"
+                  required
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">País de Procedencia *</label>
+                <input
+                  name="paisProcedencia"
+                  type="text"
+                  required
+                  value={formData.paisProcedencia}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Edad de Origen</label>
+                <input
+                  name="edadOrigen"
+                  type="text"
+                  value={formData.edadOrigen}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="ej: Siglo XV"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tipo</label>
+                <select
+                  name="tipo"
+                  value={formData.tipo}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar tipo</option>
+                  <option value="Arte marcial tradicional">Arte marcial tradicional</option>
+                  <option value="Deporte de combate">Deporte de combate</option>
+                  <option value="Sistema de defensa personal">Sistema de defensa personal</option>
+                  <option value="Arte marcial mixto">Arte marcial mixto</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Focus</label>
+                <select
+                  name="focus"
+                  value={formData.focus}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar focus</option>
+                  <option value="Golpes">Golpes</option>
+                  <option value="Agarres">Agarres</option>
+                  <option value="Combinado">Combinado</option>
+                  <option value="Armas">Armas</option>
+                  <option value="Defensa personal">Defensa personal</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tipo de Contacto</label>
+                <select
+                  name="tipoContacto"
+                  value={formData.tipoContacto}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar contacto</option>
+                  <option value="Contacto completo">Contacto completo</option>
+                  <option value="Semi-contacto">Semi-contacto</option>
+                  <option value="Sin contacto">Sin contacto</option>
+                  <option value="Contacto ligero">Contacto ligero</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Demandas Físicas</label>
+                <select
+                  name="demandasFisicas"
+                  value={formData.demandasFisicas}
+                  onChange={handleChange}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar demandas</option>
+                  <option value="Baja">Baja</option>
+                  <option value="Baja-Media">Baja-Media</option>
+                  <option value="Media">Media</option>
+                  <option value="Media-Alta">Media-Alta</option>
+                  <option value="Alta">Alta</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Filosofía</label>
+              <textarea
+                name="filosofia"
+                value={formData.filosofia}
+                onChange={handleChange}
+                rows={3}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Describe la filosofía de este arte marcial..."
+              />
+            </div>
+
+            {/* Fortalezas */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Fortalezas</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={newFortaleza}
+                  onChange={(e) => setNewFortaleza(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Agregar fortaleza..."
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFortaleza())}
+                />
+                <button
+                  type="button"
+                  onClick={addFortaleza}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  ➕
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.fortalezas.map((fortaleza, index) => (
+                  <span
+                    key={index}
+                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  >
+                    {fortaleza}
+                    <button
+                      type="button"
+                      onClick={() => removeFortaleza(index)}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Videos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Videos (URLs)</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="url"
+                  value={newVideo}
+                  onChange={(e) => setNewVideo(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="https://youtube.com/..."
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVideo())}
+                />
+                <button
+                  type="button"
+                  onClick={addVideo}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  ➕
+                </button>
+              </div>
+              <div className="space-y-2">
+                {formData.videos.map((video, index) => (
+                  <div
+                    key={index}
+                    className="bg-blue-50 border border-blue-200 p-2 rounded flex items-center justify-between"
+                  >
+                    <span className="text-sm text-blue-800 truncate">{video}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeVideo(index)}
+                      className="text-blue-600 hover:text-blue-800 ml-2"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="submit"
+                className="flex-1 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                {artToEdit ? 'Actualizar' : 'Crear'}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2 px-4 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente principal de la aplicación autenticada
+function AuthenticatedApp() {
+  const { user, logout } = useAuth();
   const [martialArts, setMartialArts] = useState([]);
   const [filteredArts, setFilteredArts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentView, setCurrentView] = useState('lista'); // 'lista', 'admin', 'comparacion', 'detalle', 'form'
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedArts, setSelectedArts] = useState([]);
-  const [editingArt, setEditingArt] = useState(null);
-  const [viewingArt, setViewingArt] = useState(null);
   const [message, setMessage] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentView, setCurrentView] = useState('lista');
+  const [selectedArts, setSelectedArts] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [artToEdit, setArtToEdit] = useState(null);
 
-  // Estados para filtros
-  const [filters, setFilters] = useState({
-    tipo: '',
-    paisProcedencia: '',
-    tipoContacto: '',
-    demandasFisicas: ''
-  });
+  // Verificar permisos
+  const canEdit = (art) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role === 'moderator') return true;
+    return art.creadoPor === user._id;
+  };
 
-  // Cargar datos al inicializar
+  const canDelete = (art) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    return art.creadoPor === user._id;
+  };
+
+  const isModeratorOrAdmin = () => {
+    return user && (user.role === 'admin' || user.role === 'moderator');
+  };
+
+  // Efectos
   useEffect(() => {
     fetchMartialArts();
   }, []);
 
-  // Filtrar artes marciales cuando cambian los filtros o búsqueda
   useEffect(() => {
-    let filtered = martialArts.filter(art =>
+    const filtered = martialArts.filter(art =>
       art.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       art.paisProcedencia.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    if (filters.tipo) filtered = filtered.filter(art => art.tipo.includes(filters.tipo));
-    if (filters.paisProcedencia) filtered = filtered.filter(art => art.paisProcedencia.includes(filters.paisProcedencia));
-    if (filters.tipoContacto) filtered = filtered.filter(art => art.tipoContacto === filters.tipoContacto);
-    if (filters.demandasFisicas) filtered = filtered.filter(art => art.demandasFisicas === filters.demandasFisicas);
-
     setFilteredArts(filtered);
-  }, [martialArts, searchTerm, filters]);
+  }, [martialArts, searchTerm]);
 
-  // Funciones API
+  // Funciones CRUD
   const fetchMartialArts = async () => {
     try {
       setLoading(true);
-      const response = await martialArtsAPI.getAll();
-      setMartialArts(response.data || []);
       setError(null);
+      console.log('🔄 Cargando artes marciales...');
+      
+      const response = await martialArtsAPI.getAll();
+      console.log('✅ Artes marciales cargadas:', response.data?.length);
+      
+      setMartialArts(response.data || []);
     } catch (err) {
-      setError('Error al cargar las artes marciales: ' + err.message);
-      console.error('Error:', err);
+      console.error('❌ Error cargando artes marciales:', err);
+      setError('Error al cargar las artes marciales: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
   };
 
-  // Función para guardar arte marcial (crear o editar)
-  const saveArt = async (artData) => {
-    setSaving(true);
+  const createArt = async (artData) => {
     try {
-      if (editingArt) {
-        // Actualizar existente
-        await martialArtsAPI.update(editingArt._id, artData);
-        setMessage('✅ Arte marcial actualizada correctamente');
-      } else {
-        // Crear nueva
-        await martialArtsAPI.create(artData);
-        setMessage('✅ Arte marcial creada correctamente');
+      console.log('➕ Creando arte marcial:', artData);
+      const response = await martialArtsAPI.create(artData);
+      
+      if (response.success) {
+        setMessage('✅ Arte marcial creada exitosamente');
+        await fetchMartialArts();
+        setShowModal(false);
+        setArtToEdit(null);
       }
-      
-      await fetchMartialArts(); // Recargar lista
-      setCurrentView('admin');
-      setEditingArt(null);
-      
-      setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      setError('❌ Error al guardar: ' + err.message);
-    } finally {
-      setSaving(false);
+      console.error('❌ Error creando arte marcial:', err);
+      setError('Error al crear: ' + (err.response?.data?.message || err.message));
     }
+    setTimeout(() => { setMessage(''); setError(null); }, 3000);
   };
 
-  // Función para eliminar arte marcial
+  const updateArt = async (artId, artData) => {
+    try {
+      console.log('✏️ Actualizando arte marcial:', artId, artData);
+      const response = await martialArtsAPI.update(artId, artData);
+      
+      if (response.success) {
+        setMessage('✅ Arte marcial actualizada exitosamente');
+        await fetchMartialArts();
+        setShowModal(false);
+        setArtToEdit(null);
+      }
+    } catch (err) {
+      console.error('❌ Error actualizando arte marcial:', err);
+      setError('Error al actualizar: ' + (err.response?.data?.message || err.message));
+    }
+    setTimeout(() => { setMessage(''); setError(null); }, 3000);
+  };
+
   const deleteArt = async (artId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta arte marcial?')) {
       try {
+        console.log('🗑️ Eliminando arte marcial:', artId);
         await martialArtsAPI.delete(artId);
-        setMessage('✅ Arte marcial eliminada correctamente');
+        setMessage('✅ Arte marcial eliminada exitosamente');
         await fetchMartialArts();
-        setTimeout(() => setMessage(''), 3000);
       } catch (err) {
-        setError('❌ Error al eliminar: ' + err.message);
+        console.error('❌ Error eliminando arte marcial:', err);
+        setError('Error al eliminar: ' + (err.response?.data?.message || err.message));
       }
+      setTimeout(() => { setMessage(''); setError(null); }, 3000);
     }
   };
 
-  // Manejar selección para comparación
+  const initializeData = async () => {
+    try {
+      console.log('🌱 Inicializando datos...');
+      const response = await martialArtsAPI.initialize();
+      
+      if (response.success) {
+        setMessage('✅ ' + response.message);
+        await fetchMartialArts();
+      } else {
+        setMessage('ℹ️ Los datos ya están inicializados');
+      }
+    } catch (err) {
+      console.error('❌ Error inicializando:', err);
+      setMessage('❌ Error: ' + (err.response?.data?.message || err.message));
+    }
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  // Funciones de selección y comparación
   const toggleSelectArt = (art) => {
     if (selectedArts.find(a => a._id === art._id)) {
       setSelectedArts(selectedArts.filter(a => a._id !== art._id));
@@ -111,813 +708,132 @@ function App() {
     }
   };
 
-  // Formulario para crear/editar arte marcial
-  const ArtForm = () => {
-    const [formData, setFormData] = useState(editingArt || {
-      nombre: '',
-      paisProcedencia: '',
-      edadOrigen: '',
-      tipo: '',
-      focus: '',
-      tipoContacto: 'Semi-contacto',
-      demandasFisicas: 'Media',
-      filosofia: '',
-      historia: '',
-      fortalezas: [],
-      debilidades: [],
-      tecnicasPrincipales: [],
-      videos: [],
-      imagenes: []
-    });
-
-    const [newItem, setNewItem] = useState({
-      fortaleza: '',
-      debilidad: '',
-      tecnica: '',
-      video: '',
-      imagen: ''
-    });
-
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      saveArt(formData);
-    };
-
-    const addToArray = (field, value, resetField) => {
-      if (value.trim()) {
-        setFormData({
-          ...formData,
-          [field]: [...(formData[field] || []), value.trim()]
-        });
-        setNewItem({ ...newItem, [resetField]: '' });
-      }
-    };
-
-    const removeFromArray = (field, index) => {
-      setFormData({
-        ...formData,
-        [field]: formData[field].filter((_, i) => i !== index)
-      });
-    };
-
-    return (
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">
-            {editingArt ? '✏️ Editar Arte Marcial' : '➕ Nueva Arte Marcial'}
-          </h2>
-          <button
-            onClick={() => {
-              setCurrentView('admin');
-              setEditingArt(null);
-            }}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-          >
-            ← Cancelar
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Información básica */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.nombre}
-                onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                País de Procedencia *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.paisProcedencia}
-                onChange={(e) => setFormData({...formData, paisProcedencia: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Edad de Origen
-              </label>
-              <input
-                type="text"
-                value={formData.edadOrigen}
-                onChange={(e) => setFormData({...formData, edadOrigen: e.target.value})}
-                placeholder="ej: Siglo XVII, 1940s"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo
-              </label>
-              <input
-                type="text"
-                value={formData.tipo}
-                onChange={(e) => setFormData({...formData, tipo: e.target.value})}
-                placeholder="ej: Arte marcial tradicional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de Contacto
-              </label>
-              <select
-                value={formData.tipoContacto}
-                onChange={(e) => setFormData({...formData, tipoContacto: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Sin contacto">Sin contacto</option>
-                <option value="Semi-contacto">Semi-contacto</option>
-                <option value="Completo">Contacto completo</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Demandas Físicas
-              </label>
-              <select
-                value={formData.demandasFisicas}
-                onChange={(e) => setFormData({...formData, demandasFisicas: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Baja">Baja</option>
-                <option value="Baja-Media">Baja-Media</option>
-                <option value="Media">Media</option>
-                <option value="Media-Alta">Media-Alta</option>
-                <option value="Alta">Alta</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Focus */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Focus Principal
-            </label>
-            <input
-              type="text"
-              value={formData.focus}
-              onChange={(e) => setFormData({...formData, focus: e.target.value})}
-              placeholder="ej: Autodefensa, Competición, Salud"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Historia */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Historia
-            </label>
-            <textarea
-              value={formData.historia}
-              onChange={(e) => setFormData({...formData, historia: e.target.value})}
-              rows="4"
-              placeholder="Descripción histórica del arte marcial..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Filosofía */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Filosofía
-            </label>
-            <textarea
-              value={formData.filosofia}
-              onChange={(e) => setFormData({...formData, filosofia: e.target.value})}
-              rows="3"
-              placeholder="Filosofía y principios del arte marcial..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Fortalezas */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fortalezas
-            </label>
-            <div className="space-y-2">
-              {formData.fortalezas && formData.fortalezas.map((fortaleza, index) => (
-                <div key={index} className="flex items-center justify-between bg-green-50 p-2 rounded">
-                  <span className="text-green-800">{fortaleza}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeFromArray('fortalezas', index)}
-                    className="text-red-500 hover:text-red-700 px-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newItem.fortaleza}
-                  onChange={(e) => setNewItem({...newItem, fortaleza: e.target.value})}
-                  placeholder="Nueva fortaleza..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => addToArray('fortalezas', newItem.fortaleza, 'fortaleza')}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                >
-                  Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Debilidades */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Debilidades
-            </label>
-            <div className="space-y-2">
-              {formData.debilidades && formData.debilidades.map((debilidad, index) => (
-                <div key={index} className="flex items-center justify-between bg-red-50 p-2 rounded">
-                  <span className="text-red-800">{debilidad}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeFromArray('debilidades', index)}
-                    className="text-red-500 hover:text-red-700 px-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newItem.debilidad}
-                  onChange={(e) => setNewItem({...newItem, debilidad: e.target.value})}
-                  placeholder="Nueva debilidad..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => addToArray('debilidades', newItem.debilidad, 'debilidad')}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                >
-                  Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Técnicas principales */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Técnicas Principales
-            </label>
-            <div className="space-y-2">
-              {formData.tecnicasPrincipales && formData.tecnicasPrincipales.map((tecnica, index) => (
-                <div key={index} className="flex items-center justify-between bg-blue-50 p-2 rounded">
-                  <span className="text-blue-800">{tecnica}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeFromArray('tecnicasPrincipales', index)}
-                    className="text-red-500 hover:text-red-700 px-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newItem.tecnica}
-                  onChange={(e) => setNewItem({...newItem, tecnica: e.target.value})}
-                  placeholder="Nueva técnica..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => addToArray('tecnicasPrincipales', newItem.tecnica, 'tecnica')}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  Agregar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Videos */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              📹 Videos (URLs)
-            </label>
-            <div className="space-y-2">
-              {formData.videos && formData.videos.map((video, index) => (
-                <div key={index} className="flex items-center justify-between bg-purple-50 p-2 rounded">
-                  <a 
-                    href={video} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-purple-800 hover:underline truncate flex-1"
-                  >
-                    🎥 {video}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => removeFromArray('videos', index)}
-                    className="text-red-500 hover:text-red-700 px-2 ml-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={newItem.video}
-                  onChange={(e) => setNewItem({...newItem, video: e.target.value})}
-                  placeholder="https://youtube.com/watch?v=..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => addToArray('videos', newItem.video, 'video')}
-                  className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-                >
-                  Agregar Video
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Imágenes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              🖼️ Imágenes (URLs)
-            </label>
-            <div className="space-y-2">
-              {formData.imagenes && formData.imagenes.map((imagen, index) => (
-                <div key={index} className="flex items-center justify-between bg-orange-50 p-2 rounded">
-                  <div className="flex items-center gap-2 flex-1">
-                    <img 
-                      src={imagen} 
-                      alt={`Vista previa ${index + 1}`}
-                      className="w-12 h-12 object-cover rounded"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
-                    />
-                    <span className="hidden text-gray-500 text-sm">❌ Error al cargar</span>
-                    <a 
-                      href={imagen} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-orange-800 hover:underline truncate"
-                    >
-                      🖼️ {imagen}
-                    </a>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeFromArray('imagenes', index)}
-                    className="text-red-500 hover:text-red-700 px-2 ml-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={newItem.imagen}
-                  onChange={(e) => setNewItem({...newItem, imagen: e.target.value})}
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => addToArray('imagenes', newItem.imagen, 'imagen')}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-                >
-                  Agregar Imagen
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex gap-4 pt-6 border-t">
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 font-medium"
-            >
-              {saving ? '💾 Guardando...' : (editingArt ? '✅ Actualizar' : '➕ Crear')}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentView('admin');
-                setEditingArt(null);
-              }}
-              className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
-            >
-              ❌ Cancelar
-            </button>
-          </div>
-        </form>
-      </div>
-    );
+  // Handlers del modal
+  const handleCreateNew = () => {
+    setArtToEdit(null);
+    setShowModal(true);
   };
 
-  // Componente de búsqueda y filtros
-  const SearchAndFilters = () => (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
-      {/* Búsqueda */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Buscar por nombre o país..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+  const handleEdit = (art) => {
+    setArtToEdit(art);
+    setShowModal(true);
+  };
 
-      {/* Filtros */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <select
-          value={filters.tipo}
-          onChange={(e) => setFilters({...filters, tipo: e.target.value})}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Todos los tipos</option>
-          <option value="tradicional">Arte marcial tradicional</option>
-          <option value="moderno">Arte marcial moderno</option>
-          <option value="combate">Sistema de combate</option>
-          <option value="deporte">Deporte de combate</option>
-        </select>
+  const handleSaveArt = (artData) => {
+    if (artToEdit) {
+      updateArt(artToEdit._id, artData);
+    } else {
+      createArt(artData);
+    }
+  };
 
-        <input
-          type="text"
-          placeholder="País de origen..."
-          value={filters.paisProcedencia}
-          onChange={(e) => setFilters({...filters, paisProcedencia: e.target.value})}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        />
+  // Estado para detalles expandidos
+  const [expandedCards, setExpandedCards] = useState(new Set());
 
-        <select
-          value={filters.tipoContacto}
-          onChange={(e) => setFilters({...filters, tipoContacto: e.target.value})}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Tipo de contacto</option>
-          <option value="Completo">Contacto completo</option>
-          <option value="Semi-contacto">Semi-contacto</option>
-          <option value="Sin contacto">Sin contacto</option>
-        </select>
-
-        <select
-          value={filters.demandasFisicas}
-          onChange={(e) => setFilters({...filters, demandasFisicas: e.target.value})}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Demandas físicas</option>
-          <option value="Baja">Baja</option>
-          <option value="Baja-Media">Baja-Media</option>
-          <option value="Media">Media</option>
-          <option value="Media-Alta">Media-Alta</option>
-          <option value="Alta">Alta</option>
-        </select>
-      </div>
-    </div>
-  );
-
-  // Componente de navegación
-  const Navigation = () => (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => setCurrentView('lista')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            currentView === 'lista'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          📋 Ver Lista
-        </button>
-
-        <button
-          onClick={() => setCurrentView('admin')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            currentView === 'admin'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          ⚙️ Panel Admin
-        </button>
-
-        <button
-          onClick={() => {
-            if (selectedArts.length === 2) {
-              setCurrentView('comparacion');
-            } else {
-              setMessage('Selecciona exactamente 2 artes marciales para comparar');
-              setTimeout(() => setMessage(''), 3000);
-            }
-          }}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            selectedArts.length === 2
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          🥊 Comparar ({selectedArts.length}/2)
-        </button>
-
-        {selectedArts.length > 0 && (
-          <button
-            onClick={() => setSelectedArts([])}
-            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-          >
-            🗑️ Limpiar selección
-          </button>
-        )}
-      </div>
-    </div>
-  );
+  const toggleCardDetails = (artId) => {
+    const newExpanded = new Set(expandedCards);
+    if (newExpanded.has(artId)) {
+      newExpanded.delete(artId);
+    } else {
+      newExpanded.add(artId);
+    }
+    setExpandedCards(newExpanded);
+  };
 
   // Componente de tarjeta de arte marcial
-  const MartialArtCard = ({ art }) => (
-    <div className={`bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200 ${
-      selectedArts.find(a => a._id === art._id) ? 'ring-2 ring-purple-500 bg-purple-50' : ''
-    }`}>
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="text-xl font-bold text-gray-900">{art.nombre}</h3>
-        <input
-          type="checkbox"
-          checked={!!selectedArts.find(a => a._id === art._id)}
-          onChange={() => toggleSelectArt(art)}
-          className="ml-2 h-5 w-5 text-purple-600"
-        />
-      </div>
-
-      <div className="space-y-2 text-sm text-gray-600 mb-4">
-        <p><strong>Origen:</strong> {art.paisProcedencia}</p>
-        <p><strong>Época:</strong> {art.edadOrigen}</p>
-        <p><strong>Tipo:</strong> {art.tipo}</p>
-        <p><strong>Focus:</strong> {art.focus}</p>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-          {art.tipoContacto}
-        </span>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${
-          art.demandasFisicas === 'Baja' || art.demandasFisicas === 'Baja-Media' 
-            ? 'bg-green-100 text-green-800'
-            : art.demandasFisicas === 'Media' || art.demandasFisicas === 'Media-Alta'
-            ? 'bg-yellow-100 text-yellow-800'
-            : 'bg-red-100 text-red-800'
-        }`}>
-          {art.demandasFisicas}
-        </span>
-      </div>
-
-      {art.fortalezas && art.fortalezas.length > 0 && (
-        <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Fortalezas:</h4>
-          <div className="flex flex-wrap gap-1">
-            {art.fortalezas.slice(0, 3).map((fortaleza, index) => (
-              <span key={index} className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs">
-                {fortaleza}
-              </span>
-            ))}
-            {art.fortalezas.length > 3 && (
-              <span className="text-xs text-gray-500">
-                +{art.fortalezas.length - 3} más
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Mostrar imágenes si las hay */}
-      {art.imagenes && art.imagenes.length > 0 && (
-        <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Imágenes:</h4>
-          <div className="flex gap-2 overflow-x-auto">
-            {art.imagenes.slice(0, 3).map((imagen, index) => (
-              <img
-                key={index}
-                src={imagen}
-                alt={`${art.nombre} ${index + 1}`}
-                className="w-16 h-16 object-cover rounded border"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            ))}
-            {art.imagenes.length > 3 && (
-              <div className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
-                +{art.imagenes.length - 3}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Mostrar videos si los hay */}
-      {art.videos && art.videos.length > 0 && (
-        <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Videos:</h4>
-          <div className="flex gap-1">
-            {art.videos.slice(0, 2).map((video, index) => (
-              <a
-                key={index}
-                href={video}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs hover:bg-purple-100"
-              >
-                🎥 Video {index + 1}
-              </a>
-            ))}
-            {art.videos.length > 2 && (
-              <span className="text-xs text-gray-500">
-                +{art.videos.length - 2} más
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-600 italic line-clamp-2">
-          "{art.filosofia}"
-        </p>
-      </div>
-
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={() => {
-            setViewingArt(art);
-            setCurrentView('detalle');
-          }}
-          className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors text-sm"
-        >
-          👁️ Ver detalle
-        </button>
-        <button
-          onClick={() => {
-            setEditingArt(art);
-            setCurrentView('form');
-          }}
-          className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors text-sm"
-        >
-          ✏️ Editar
-        </button>
-        <button
-          onClick={() => deleteArt(art._id)}
-          className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-sm"
-        >
-          🗑️ Eliminar
-        </button>
-      </div>
-    </div>
-  );
-
-  // Componente de vista detallada
-  const DetailView = () => {
-    if (!viewingArt) return null;
-
+  const MartialArtCard = ({ art }) => {
+    const isExpanded = expandedCards.has(art._id);
+    
     return (
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold">{viewingArt.nombre}</h2>
-          <button
-            onClick={() => {
-              setCurrentView('lista');
-              setViewingArt(null);
-            }}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-          >
-            ← Volver
-          </button>
+      <div className={`bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200 ${
+        selectedArts.find(a => a._id === art._id) ? 'ring-2 ring-purple-500 bg-purple-50' : ''
+      }`}>
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="text-xl font-bold text-gray-900">{art.nombre}</h3>
+          <input
+            type="checkbox"
+            checked={!!selectedArts.find(a => a._id === art._id)}
+            onChange={() => toggleSelectArt(art)}
+            className="ml-2 h-5 w-5 text-purple-600"
+          />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Información principal */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">📋 Información General</h3>
-            <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-              <p><strong>Origen:</strong> {viewingArt.paisProcedencia}</p>
-              <p><strong>Época:</strong> {viewingArt.edadOrigen}</p>
-              <p><strong>Tipo:</strong> {viewingArt.tipo}</p>
-              <p><strong>Focus:</strong> {viewingArt.focus}</p>
-              <p><strong>Contacto:</strong> {viewingArt.tipoContacto}</p>
-              <p><strong>Demandas físicas:</strong> {viewingArt.demandasFisicas}</p>
+        <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <p><strong>Origen:</strong> {art.paisProcedencia}</p>
+          <p><strong>Época:</strong> {art.edadOrigen}</p>
+          <p><strong>Tipo:</strong> {art.tipo}</p>
+          <p><strong>Focus:</strong> {art.focus}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+            {art.tipoContacto}
+          </span>
+          <span className={`px-2 py-1 rounded text-xs font-medium ${
+            art.demandasFisicas === 'Baja' || art.demandasFisicas === 'Baja-Media' 
+              ? 'bg-green-100 text-green-800'
+              : art.demandasFisicas === 'Media' || art.demandasFisicas === 'Media-Alta'
+              ? 'bg-yellow-100 text-yellow-800'
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {art.demandasFisicas}
+          </span>
+        </div>
+
+        {/* Detalles expandibles */}
+        {isExpanded && (
+          <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+            {/* ID y Metadatos */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-gray-800 mb-2">ℹ️ Información Técnica</h4>
+              <div className="space-y-1 text-xs text-gray-600">
+                <p><strong>ID:</strong> {art._id}</p>
+                <p><strong>Creado por:</strong> {art.creadoPor || 'Sistema'}</p>
+                <p><strong>Fecha creación:</strong> {
+                  art.fechaCreacion ? new Date(art.fechaCreacion).toLocaleDateString() : 'No disponible'
+                }</p>
+                <p><strong>Última modificación:</strong> {
+                  art.fechaModificacion ? new Date(art.fechaModificacion).toLocaleDateString() : 'No disponible'
+                }</p>
+              </div>
             </div>
 
-            {/* Historia */}
-            {viewingArt.historia && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold mb-3">📚 Historia</h3>
-                <p className="text-gray-700 leading-relaxed bg-blue-50 p-4 rounded-lg">
-                  {viewingArt.historia}
-                </p>
+            {/* Filosofía completa */}
+            {art.filosofia && (
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">🧘 Filosofía</h4>
+                <p className="text-sm text-blue-900 italic">"{art.filosofia}"</p>
               </div>
             )}
 
-            {/* Filosofía */}
-            {viewingArt.filosofia && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold mb-3">🧘 Filosofía</h3>
-                <p className="text-gray-700 leading-relaxed bg-purple-50 p-4 rounded-lg italic">
-                  "{viewingArt.filosofia}"
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Características técnicas */}
-          <div>
-            {/* Fortalezas */}
-            {viewingArt.fortalezas && viewingArt.fortalezas.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold mb-3">💪 Fortalezas</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {viewingArt.fortalezas.map((fortaleza, index) => (
-                    <div key={index} className="bg-green-50 border-l-4 border-green-400 p-3">
-                      <span className="text-green-800">{fortaleza}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Debilidades */}
-            {viewingArt.debilidades && viewingArt.debilidades.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold mb-3">⚠️ Debilidades</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {viewingArt.debilidades.map((debilidad, index) => (
-                    <div key={index} className="bg-red-50 border-l-4 border-red-400 p-3">
-                      <span className="text-red-800">{debilidad}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Técnicas principales */}
-            {viewingArt.tecnicasPrincipales && viewingArt.tecnicasPrincipales.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold mb-3">🥋 Técnicas Principales</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {viewingArt.tecnicasPrincipales.map((tecnica, index) => (
-                    <div key={index} className="bg-blue-50 border-l-4 border-blue-400 p-3">
-                      <span className="text-blue-800">{tecnica}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Multimedia */}
-        <div className="mt-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Videos */}
-            {viewingArt.videos && viewingArt.videos.length > 0 && (
+            {/* Todas las fortalezas */}
+            {art.fortalezas && art.fortalezas.length > 0 && (
               <div>
-                <h3 className="text-xl font-semibold mb-4">📹 Videos</h3>
-                <div className="space-y-3">
-                  {viewingArt.videos.map((video, index) => (
-                    <div key={index} className="bg-purple-50 p-4 rounded-lg">
-                      <a
-                        href={video}
-                        target="_blank"
+                <h4 className="font-semibold text-green-800 mb-2">💪 Todas las Fortalezas ({art.fortalezas.length})</h4>
+                <div className="flex flex-wrap gap-1">
+                  {art.fortalezas.map((fortaleza, index) => (
+                    <span key={index} className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                      {fortaleza}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Videos */}
+            {art.videos && art.videos.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-red-800 mb-2">🎥 Videos ({art.videos.length})</h4>
+                <div className="space-y-2">
+                  {art.videos.map((video, index) => (
+                    <div key={index} className="bg-red-50 border border-red-200 p-2 rounded">
+                      <a 
+                        href={video} 
+                        target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-purple-700 hover:text-purple-900 hover:underline break-all"
+                        className="text-red-600 hover:text-red-800 text-xs break-all"
                       >
-                        🎥 Video {index + 1}: {video}
+                        🔗 {video}
                       </a>
                     </div>
                   ))}
@@ -925,29 +841,91 @@ function App() {
               </div>
             )}
 
-            {/* Imágenes */}
-            {viewingArt.imagenes && viewingArt.imagenes.length > 0 && (
+            {/* Información adicional si existe */}
+            {(art.debilidades && art.debilidades.length > 0) && (
               <div>
-                <h3 className="text-xl font-semibold mb-4">🖼️ Imágenes</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {viewingArt.imagenes.map((imagen, index) => (
-                    <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                      <img
-                        src={imagen}
-                        alt={`${viewingArt.nombre} ${index + 1}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                        onClick={() => window.open(imagen, '_blank')}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.parentNode.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-500"><span>❌ Error al cargar</span></div>';
-                        }}
-                      />
-                    </div>
+                <h4 className="font-semibold text-orange-800 mb-2">⚠️ Debilidades</h4>
+                <div className="flex flex-wrap gap-1">
+                  {art.debilidades.map((debilidad, index) => (
+                    <span key={index} className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">
+                      {debilidad}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Técnicas principales si existen */}
+            {(art.tecnicasPrincipales && art.tecnicasPrincipales.length > 0) && (
+              <div>
+                <h4 className="font-semibold text-purple-800 mb-2">🥋 Técnicas Principales</h4>
+                <div className="flex flex-wrap gap-1">
+                  {art.tecnicasPrincipales.map((tecnica, index) => (
+                    <span key={index} className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                      {tecnica}
+                    </span>
                   ))}
                 </div>
               </div>
             )}
           </div>
+        )}
+
+        {/* Fortalezas resumidas (solo cuando no está expandido) */}
+        {!isExpanded && art.fortalezas && art.fortalezas.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Fortalezas:</h4>
+            <div className="flex flex-wrap gap-1">
+              {art.fortalezas.slice(0, 3).map((fortaleza, index) => (
+                <span key={index} className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs">
+                  {fortaleza}
+                </span>
+              ))}
+              {art.fortalezas.length > 3 && (
+                <span className="text-xs text-gray-500">+{art.fortalezas.length - 3} más</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Filosofía resumida (solo cuando no está expandido) */}
+        {!isExpanded && art.filosofia && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-xs text-gray-600 italic">
+              "{art.filosofia.substring(0, 100)}..."
+            </p>
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => toggleCardDetails(art._id)}
+            className={`px-3 py-1 rounded transition-colors text-sm ${
+              isExpanded 
+                ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {isExpanded ? '📄 Ocultar Detalles' : '📋 Ver Detalles'}
+          </button>
+
+          {canEdit(art) && (
+            <button
+              onClick={() => handleEdit(art)}
+              className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors text-sm"
+            >
+              ✏️ Editar
+            </button>
+          )}
+          
+          {canDelete(art) && (
+            <button
+              onClick={() => deleteArt(art._id)}
+              className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-sm"
+            >
+              🗑️ Eliminar
+            </button>
+          )}
         </div>
       </div>
     );
@@ -967,12 +945,11 @@ function App() {
             onClick={() => setCurrentView('lista')}
             className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
           >
-            ← Volver
+            ← Volver a Lista
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Arte Marcial 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="border rounded-lg p-4">
             <h3 className="text-xl font-bold text-center mb-4 text-blue-600">{art1.nombre}</h3>
             <div className="space-y-2 text-sm">
@@ -982,10 +959,19 @@ function App() {
               <p><strong>Contacto:</strong> {art1.tipoContacto}</p>
               <p><strong>Demandas físicas:</strong> {art1.demandasFisicas}</p>
               <p><strong>Focus:</strong> {art1.focus}</p>
+              {art1.fortalezas && art1.fortalezas.length > 0 && (
+                <div>
+                  <strong>Fortalezas:</strong>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {art1.fortalezas.map((f, i) => (
+                      <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Arte Marcial 2 */}
           <div className="border rounded-lg p-4">
             <h3 className="text-xl font-bold text-center mb-4 text-purple-600">{art2.nombre}</h3>
             <div className="space-y-2 text-sm">
@@ -995,64 +981,89 @@ function App() {
               <p><strong>Contacto:</strong> {art2.tipoContacto}</p>
               <p><strong>Demandas físicas:</strong> {art2.demandasFisicas}</p>
               <p><strong>Focus:</strong> {art2.focus}</p>
+              {art2.fortalezas && art2.fortalezas.length > 0 && (
+                <div>
+                  <strong>Fortalezas:</strong>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {art2.fortalezas.map((f, i) => (
+                      <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Análisis comparativo */}
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-4">📊 Análisis Comparativo</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Similitudes */}
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h4 className="font-medium text-green-800 mb-2">✅ Similitudes</h4>
-              <ul className="text-sm text-green-700 space-y-1">
-                {art1.paisProcedencia === art2.paisProcedencia && (
-                  <li>• Ambas originarias de {art1.paisProcedencia}</li>
-                )}
-                {art1.tipoContacto === art2.tipoContacto && (
-                  <li>• Mismo tipo de contacto: {art1.tipoContacto}</li>
-                )}
-                {art1.demandasFisicas === art2.demandasFisicas && (
-                  <li>• Mismas demandas físicas: {art1.demandasFisicas}</li>
-                )}
-                {art1.focus === art2.focus && (
-                  <li>• Mismo focus: {art1.focus}</li>
-                )}
-              </ul>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-green-50 p-4 rounded-lg">
+            <h4 className="font-medium text-green-800 mb-2">✅ Similitudes</h4>
+            <ul className="text-sm text-green-700 space-y-1">
+              {art1.paisProcedencia === art2.paisProcedencia && (
+                <li>• Ambas originarias de {art1.paisProcedencia}</li>
+              )}
+              {art1.tipoContacto === art2.tipoContacto && (
+                <li>• Mismo tipo de contacto: {art1.tipoContacto}</li>
+              )}
+              {art1.demandasFisicas === art2.demandasFisicas && (
+                <li>• Mismas demandas físicas: {art1.demandasFisicas}</li>
+              )}
+              {art1.tipo === art2.tipo && (
+                <li>• Mismo tipo: {art1.tipo}</li>
+              )}
+              {art1.focus === art2.focus && (
+                <li>• Mismo focus: {art1.focus}</li>
+              )}
+            </ul>
+            {art1.paisProcedencia !== art2.paisProcedencia && 
+             art1.tipoContacto !== art2.tipoContacto && 
+             art1.demandasFisicas !== art2.demandasFisicas && 
+             art1.tipo !== art2.tipo && 
+             art1.focus !== art2.focus && (
+              <p className="text-sm text-green-700">• Estilos muy diferentes, ideal para comparar enfoques distintos</p>
+            )}
+          </div>
 
-            {/* Diferencias */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-2">🔄 Diferencias</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                {art1.paisProcedencia !== art2.paisProcedencia && (
-                  <li>• Origen: {art1.nombre} ({art1.paisProcedencia}) vs {art2.nombre} ({art2.paisProcedencia})</li>
-                )}
-                {art1.tipoContacto !== art2.tipoContacto && (
-                  <li>• Contacto: {art1.tipoContacto} vs {art2.tipoContacto}</li>
-                )}
-                {art1.demandasFisicas !== art2.demandasFisicas && (
-                  <li>• Demandas: {art1.demandasFisicas} vs {art2.demandasFisicas}</li>
-                )}
-                {art1.focus !== art2.focus && (
-                  <li>• Focus: {art1.focus} vs {art2.focus}</li>
-                )}
-              </ul>
-            </div>
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-medium text-blue-800 mb-2">🔄 Diferencias</h4>
+            <ul className="text-sm text-blue-700 space-y-1">
+              {art1.paisProcedencia !== art2.paisProcedencia && (
+                <li>• Origen: {art1.paisProcedencia} vs {art2.paisProcedencia}</li>
+              )}
+              {art1.tipoContacto !== art2.tipoContacto && (
+                <li>• Contacto: {art1.tipoContacto} vs {art2.tipoContacto}</li>
+              )}
+              {art1.demandasFisicas !== art2.demandasFisicas && (
+                <li>• Demandas: {art1.demandasFisicas} vs {art2.demandasFisicas}</li>
+              )}
+              {art1.tipo !== art2.tipo && (
+                <li>• Tipo: {art1.tipo} vs {art2.tipo}</li>
+              )}
+              {art1.focus !== art2.focus && (
+                <li>• Focus: {art1.focus} vs {art2.focus}</li>
+              )}
+            </ul>
           </div>
         </div>
       </div>
     );
   };
 
-  // Panel de administrador completo
-  const AdminPanel = () => (
-    <div className="space-y-6">
-      {/* Estadísticas */}
+  // Panel de administración
+  const AdminPanel = () => {
+    const [adminView, setAdminView] = useState('stats'); // 'stats' o 'details'
+
+    const AdminStats = () => (
       <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h2 className="text-2xl font-bold mb-6">⚙️ Panel de Administrador</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">⚙️ Panel de Administrador</h2>
+          <button
+            onClick={() => setAdminView('details')}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            📋 Ver Detalles Completos
+          </button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
@@ -1082,166 +1093,219 @@ function App() {
           </div>
         </div>
 
-        {/* Botón para crear nueva */}
-        <div className="text-center">
+        <div className="flex flex-wrap gap-4 justify-center">
           <button
-            onClick={() => {
-              setEditingArt(null);
-              setCurrentView('form');
-            }}
-            className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-lg"
+            onClick={initializeData}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+          >
+            🌱 Inicializar Datos
+          </button>
+          <button
+            onClick={handleCreateNew}
+            className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
           >
             ➕ Crear Nueva Arte Marcial
           </button>
         </div>
       </div>
+    );
 
-      {/* Lista de artes marciales para administrar */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-xl font-bold mb-4">📋 Gestionar Artes Marciales</h3>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left">Nombre</th>
-                <th className="px-4 py-2 text-left">Origen</th>
-                <th className="px-4 py-2 text-left">Tipo</th>
-                <th className="px-4 py-2 text-left">Multimedia</th>
-                <th className="px-4 py-2 text-left">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {martialArts.map((art) => (
-                <tr key={art._id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{art.nombre}</td>
-                  <td className="px-4 py-3">{art.paisProcedencia}</td>
-                  <td className="px-4 py-3 text-sm">{art.tipo}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      {art.videos && art.videos.length > 0 && (
-                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
-                          📹 {art.videos.length}
-                        </span>
-                      )}
-                      {art.imagenes && art.imagenes.length > 0 && (
-                        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">
-                          🖼️ {art.imagenes.length}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
+    const AdminDetails = () => (
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">📋 Detalles Completos - Todas las Artes Marciales</h2>
+            <button
+              onClick={() => setAdminView('stats')}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+            >
+              ← Volver a Estadísticas
+            </button>
+          </div>
+          <p className="text-gray-600 mt-2">Vista completa de todos los datos registrados</p>
+        </div>
+
+        <div className="p-6">
+          {martialArts.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No hay artes marciales registradas
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {martialArts.map((art, index) => (
+                <div key={art._id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {index + 1}. {art.nombre}
+                    </h3>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => {
-                          setViewingArt(art);
-                          setCurrentView('detalle');
-                        }}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+                        onClick={() => handleEdit(art)}
+                        className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
                       >
-                        👁️
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditingArt(art);
-                          setCurrentView('form');
-                        }}
-                        className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-sm hover:bg-yellow-200"
-                      >
-                        ✏️
+                        ✏️ Editar
                       </button>
                       <button
                         onClick={() => deleteArt(art._id)}
-                        className="px-2 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
+                        className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
                       >
-                        🗑️
+                        🗑️ Eliminar
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+                  </div>
 
-  // Renderizado condicional según la vista actual
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando artes marciales...</p>
-          </div>
-        </div>
-      );
-    }
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Información básica */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-800 border-b pb-1">📍 Información General</h4>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium">País:</span> {art.paisProcedencia || 'No especificado'}</p>
+                        <p><span className="font-medium">Época:</span> {art.edadOrigen || 'No especificado'}</p>
+                        <p><span className="font-medium">Tipo:</span> {art.tipo || 'No especificado'}</p>
+                        <p><span className="font-medium">Focus:</span> {art.focus || 'No especificado'}</p>
+                      </div>
+                    </div>
 
-    if (error) {
-      return (
-        <div className="text-center py-12">
-          <div className="text-red-600 text-xl mb-4">❌ {error}</div>
-          <button 
-            onClick={fetchMartialArts}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Reintentar
-          </button>
-        </div>
-      );
-    }
+                    {/* Características técnicas */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-800 border-b pb-1">🥊 Características</h4>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium">Contacto:</span> 
+                          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                            art.tipoContacto ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {art.tipoContacto || 'No especificado'}
+                          </span>
+                        </p>
+                        <p><span className="font-medium">Demandas:</span>
+                          <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                            art.demandasFisicas === 'Baja' || art.demandasFisicas === 'Baja-Media' 
+                              ? 'bg-green-100 text-green-800'
+                              : art.demandasFisicas === 'Media' || art.demandasFisicas === 'Media-Alta'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : art.demandasFisicas
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {art.demandasFisicas || 'No especificado'}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
 
-    switch (currentView) {
-      case 'form':
-        return <ArtForm />;
-      case 'detalle':
-        return <DetailView />;
-      case 'comparacion':
-        return <ComparisonView />;
-      case 'admin':
-        return <AdminPanel />;
-      default:
-        return (
-          <>
-            <SearchAndFilters />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredArts.map(art => (
-                <MartialArtCard key={art._id} art={art} />
+                    {/* Metadatos */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-800 border-b pb-1">ℹ️ Metadatos</h4>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium">ID:</span> {art._id}</p>
+                        <p><span className="font-medium">Creado:</span> {
+                          art.fechaCreacion ? new Date(art.fechaCreacion).toLocaleDateString() : 'No disponible'
+                        }</p>
+                        <p><span className="font-medium">Modificado:</span> {
+                          art.fechaModificacion ? new Date(art.fechaModificacion).toLocaleDateString() : 'No disponible'
+                        }</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filosofía */}
+                  {art.filosofia && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold text-gray-800 mb-2">🧘 Filosofía</h4>
+                      <p className="text-sm text-gray-700 italic">"{art.filosofia}"</p>
+                    </div>
+                  )}
+
+                  {/* Fortalezas */}
+                  {art.fortalezas && art.fortalezas.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-800 mb-2">💪 Fortalezas ({art.fortalezas.length})</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {art.fortalezas.map((fortaleza, idx) => (
+                          <span key={idx} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                            {fortaleza}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Videos */}
+                  {art.videos && art.videos.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-800 mb-2">🎥 Videos ({art.videos.length})</h4>
+                      <div className="space-y-2">
+                        {art.videos.map((video, idx) => (
+                          <div key={idx} className="bg-blue-50 border border-blue-200 p-3 rounded">
+                            <a 
+                              href={video} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 text-sm break-all"
+                            >
+                              🔗 {video}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-            {filteredArts.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-500 mb-4">
-                  No se encontraron artes marciales que coincidan con los filtros
-                </div>
-              </div>
-            )}
-          </>
-        );
-    }
+          )}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="space-y-6">
+        {adminView === 'stats' ? <AdminStats /> : <AdminDetails />}
+      </div>
+    );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando artes marciales...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-lg border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">
-            🥋 Sistema de Artes Marciales
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Explora, compara y gestiona diferentes disciplinas marciales del mundo
-          </p>
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">
+              🥋 Sistema de Artes Marciales
+            </h1>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                Hola, <strong>{user?.nombre}</strong>
+                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                  {user?.role || 'user'}
+                </span>
+              </span>
+              <button
+                onClick={logout}
+                className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+              >
+                🚪 Salir
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Mensajes */}
       {message && (
-        <div className="container mx-auto px-4 pt-4">
+        <div className="max-w-7xl mx-auto px-4 pt-4">
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
             {message}
             <button
@@ -1255,7 +1319,7 @@ function App() {
       )}
 
       {error && (
-        <div className="container mx-auto px-4 pt-4">
+        <div className="max-w-7xl mx-auto px-4 pt-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
             {error}
             <button
@@ -1268,20 +1332,196 @@ function App() {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <Navigation />
-        {renderContent()}
+      {/* Navegación */}
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setCurrentView('lista')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  currentView === 'lista'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📋 Lista
+              </button>
+
+              {isModeratorOrAdmin() && (
+                <button
+                  onClick={() => setCurrentView('admin')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    currentView === 'admin'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  ⚙️ Admin
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  if (selectedArts.length === 2) {
+                    setCurrentView('comparacion');
+                  } else {
+                    setMessage('Selecciona exactamente 2 artes marciales para comparar');
+                    setTimeout(() => setMessage(''), 3000);
+                  }
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedArts.length === 2
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                🥊 Comparar ({selectedArts.length}/2)
+              </button>
+
+              {selectedArts.length > 0 && (
+                <button
+                  onClick={() => setSelectedArts([])}
+                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                >
+                  🗑️ Limpiar
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleCreateNew}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              >
+                ➕ Nueva
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido principal */}
+      <main className="max-w-7xl mx-auto px-4 pb-8">
+        {currentView === 'comparacion' ? (
+          <ComparisonView />
+        ) : currentView === 'admin' ? (
+          isModeratorOrAdmin() ? (
+            <AdminPanel />
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-yellow-600 text-xl">⚠️ No tienes permisos para acceder al panel de administrador</div>
+            </div>
+          )
+        ) : (
+          <>
+            {/* Búsqueda */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+              <input
+                type="text"
+                placeholder="Buscar por nombre o país..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Lista de artes marciales */}
+            {filteredArts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500 mb-4">
+                  {martialArts.length === 0 
+                    ? 'No hay artes marciales cargadas' 
+                    : 'No se encontraron artes marciales que coincidan con la búsqueda'
+                  }
+                </div>
+                {martialArts.length === 0 && isModeratorOrAdmin() && (
+                  <div className="space-y-2">
+                    <button 
+                      onClick={initializeData}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-2"
+                    >
+                      🌱 Inicializar Datos
+                    </button>
+                    <button 
+                      onClick={handleCreateNew}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      ➕ Crear Nueva
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredArts.map(art => (
+                  <MartialArtCard key={art._id} art={art} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-gray-600">
+        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600">
           <p>Sistema de Artes Marciales - {martialArts.length} disciplinas disponibles</p>
+          <p className="text-sm">Usuario: {user?.nombre} {user?.apellidos} | Rol: {user?.role}</p>
         </div>
       </footer>
+
+      {/* Modal */}
+      <MartialArtModal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setArtToEdit(null);
+        }}
+        artToEdit={artToEdit}
+        onSave={handleSaveArt}
+      />
     </div>
   );
+}
+
+// Componente principal de la aplicación
+function App() {
+  const [showLogin, setShowLogin] = useState(true);
+
+  return (
+    <AuthProvider>
+      <AppContent showLogin={showLogin} setShowLogin={setShowLogin} />
+    </AuthProvider>
+  );
+}
+
+// Componente de contenido que maneja la autenticación
+function AppContent({ showLogin, setShowLogin }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  console.log('🔄 AppContent render - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verificando autenticación...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return showLogin ? (
+      <LoginForm onSwitchToRegister={() => setShowLogin(false)} />
+    ) : (
+      <RegisterForm onSwitchToLogin={() => setShowLogin(true)} />
+    );
+  }
+
+  return <AuthenticatedApp />;
 }
 
 export default App;
