@@ -1,4 +1,4 @@
-// /frontend/src/App.js - Versión completa con CRUD funcional y diseño mejorado
+// /frontend/src/App.js - Versión limpia con funcionalidad de historia
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { martialArtsAPI } from './services/api';
@@ -13,11 +13,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await login({ email, password });
-    } catch (error) {
-      console.error('Error en login:', error);
-    }
+    await login({ email, password });
   };
 
   return (
@@ -113,12 +109,8 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       return;
     }
 
-    try {
-      const { confirmPassword, ...registerData } = formData;
-      await register(registerData);
-    } catch (error) {
-      console.error('Error en registro:', error);
-    }
+    const { confirmPassword, ...registerData } = formData;
+    await register(registerData);
   };
 
   const handleChange = (e) => {
@@ -246,6 +238,7 @@ const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave, isLoading }) => {
     tipoContacto: '',
     demandasFisicas: '',
     filosofia: '',
+    historia: '', // NUEVO CAMPO
     fortalezas: [],
     videos: []
   });
@@ -264,6 +257,7 @@ const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave, isLoading }) => {
           tipoContacto: artToEdit.tipoContacto || '',
           demandasFisicas: artToEdit.demandasFisicas || '',
           filosofia: artToEdit.filosofia || '',
+          historia: artToEdit.historia || '', // NUEVO CAMPO
           fortalezas: artToEdit.fortalezas || [],
           videos: artToEdit.videos || []
         });
@@ -277,6 +271,7 @@ const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave, isLoading }) => {
           tipoContacto: '',
           demandasFisicas: '',
           filosofia: '',
+          historia: '', // NUEVO CAMPO
           fortalezas: [],
           videos: []
         });
@@ -457,6 +452,19 @@ const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave, isLoading }) => {
               </div>
             </div>
 
+            {/* NUEVA SECCIÓN: Historia */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">📚 Historia</label>
+              <textarea
+                name="historia"
+                value={formData.historia}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="Describe la historia y orígenes de este arte marcial..."
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Filosofía</label>
               <textarea
@@ -584,6 +592,7 @@ function AuthenticatedApp() {
   const [showModal, setShowModal] = useState(false);
   const [artToEdit, setArtToEdit] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const [expandedCards, setExpandedCards] = useState(new Set());
 
   // Verificar permisos
   const canEdit = (art) => {
@@ -623,14 +632,9 @@ function AuthenticatedApp() {
     try {
       setLoading(true);
       setError(null);
-      console.log('🔄 Cargando artes marciales...');
-      
       const response = await martialArtsAPI.getAll();
-      console.log('✅ Artes marciales cargadas:', response.data?.length);
-      
       setMartialArts(response.data || []);
     } catch (err) {
-      console.error('❌ Error cargando artes marciales:', err);
       setError('Error al cargar las artes marciales: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
@@ -640,7 +644,6 @@ function AuthenticatedApp() {
   const createArt = async (artData) => {
     try {
       setModalLoading(true);
-      console.log('➕ Creando arte marcial:', artData);
       const response = await martialArtsAPI.create(artData);
       
       if (response.success) {
@@ -650,7 +653,6 @@ function AuthenticatedApp() {
         setArtToEdit(null);
       }
     } catch (err) {
-      console.error('❌ Error creando arte marcial:', err);
       setError('Error al crear: ' + (err.response?.data?.message || err.message));
     } finally {
       setModalLoading(false);
@@ -661,7 +663,6 @@ function AuthenticatedApp() {
   const updateArt = async (artId, artData) => {
     try {
       setModalLoading(true);
-      console.log('✏️ Actualizando arte marcial:', artId, artData);
       const response = await martialArtsAPI.update(artId, artData);
       
       if (response.success) {
@@ -671,7 +672,6 @@ function AuthenticatedApp() {
         setArtToEdit(null);
       }
     } catch (err) {
-      console.error('❌ Error actualizando arte marcial:', err);
       setError('Error al actualizar: ' + (err.response?.data?.message || err.message));
     } finally {
       setModalLoading(false);
@@ -682,12 +682,10 @@ function AuthenticatedApp() {
   const deleteArt = async (artId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta arte marcial?')) {
       try {
-        console.log('🗑️ Eliminando arte marcial:', artId);
         await martialArtsAPI.delete(artId);
         setMessage('✅ Arte marcial eliminada exitosamente');
         await fetchMartialArts();
       } catch (err) {
-        console.error('❌ Error eliminando arte marcial:', err);
         setError('Error al eliminar: ' + (err.response?.data?.message || err.message));
       }
       setTimeout(() => { setMessage(''); setError(null); }, 3000);
@@ -696,7 +694,6 @@ function AuthenticatedApp() {
 
   const initializeData = async () => {
     try {
-      console.log('🌱 Inicializando datos...');
       const response = await martialArtsAPI.initialize();
       
       if (response.success) {
@@ -706,7 +703,6 @@ function AuthenticatedApp() {
         setMessage('ℹ️ Los datos ya están inicializados');
       }
     } catch (err) {
-      console.error('❌ Error inicializando:', err);
       setMessage('❌ Error: ' + (err.response?.data?.message || err.message));
     }
     setTimeout(() => setMessage(''), 3000);
@@ -716,10 +712,10 @@ function AuthenticatedApp() {
   const toggleSelectArt = (art) => {
     if (selectedArts.find(a => a._id === art._id)) {
       setSelectedArts(selectedArts.filter(a => a._id !== art._id));
-    } else if (selectedArts.length < 2) {
+    } else if (selectedArts.length < 4) {
       setSelectedArts([...selectedArts, art]);
     } else {
-      setMessage('Solo puedes seleccionar 2 artes marciales para comparar');
+      setMessage('Solo puedes seleccionar hasta 4 artes marciales para comparar');
       setTimeout(() => setMessage(''), 3000);
     }
   };
@@ -731,7 +727,6 @@ function AuthenticatedApp() {
   };
 
   const handleEdit = (art) => {
-    console.log('🔧 Editando arte marcial:', art);
     setArtToEdit(art);
     setShowModal(true);
   };
@@ -744,9 +739,6 @@ function AuthenticatedApp() {
     }
   };
 
-  // Estado para detalles expandidos
-  const [expandedCards, setExpandedCards] = useState(new Set());
-
   const toggleCardDetails = (artId) => {
     const newExpanded = new Set(expandedCards);
     if (newExpanded.has(artId)) {
@@ -757,7 +749,7 @@ function AuthenticatedApp() {
     setExpandedCards(newExpanded);
   };
 
-  // Componente de tarjeta de arte marcial mejorado con layout de cards
+  // Componente de tarjeta de arte marcial mejorado
   const MartialArtCard = ({ art }) => {
     const isExpanded = expandedCards.has(art._id);
     const isSelected = selectedArts.find(a => a._id === art._id);
@@ -837,6 +829,16 @@ function AuthenticatedApp() {
             </div>
           )}
 
+          {/* Historia resumida - NUEVA SECCIÓN */}
+          {!isExpanded && art.historia && (
+            <div className="mb-4 p-3 glass rounded-lg border border-orange-500">
+              <h4 className="text-sm font-medium text-orange-300 mb-1">📚 Historia:</h4>
+              <p className="text-xs text-orange-200 italic">
+                "{art.historia.length > 100 ? art.historia.substring(0, 100) + '...' : art.historia}"
+              </p>
+            </div>
+          )}
+
           {/* Filosofía resumida */}
           {!isExpanded && art.filosofia && (
             <div className="mb-4 p-3 glass rounded-lg">
@@ -850,6 +852,16 @@ function AuthenticatedApp() {
           {/* Detalles expandidos */}
           {isExpanded && (
             <div className="space-y-4 border-t border-gray-600 pt-4">
+              {/* Historia completa - NUEVA SECCIÓN */}
+              {art.historia && (
+                <div className="glass p-4 rounded-lg border border-orange-500">
+                  <h4 className="font-semibold text-orange-300 mb-2 flex items-center">
+                    📚 Historia Completa
+                  </h4>
+                  <p className="text-sm text-orange-200 italic leading-relaxed">"{art.historia}"</p>
+                </div>
+              )}
+
               {/* Filosofía completa */}
               {art.filosofia && (
                 <div className="glass p-4 rounded-lg border border-blue-500">
@@ -937,16 +949,79 @@ function AuthenticatedApp() {
     );
   };
 
-  // Componente de comparación mejorado
+  // Componente de comparación
   const ComparisonView = () => {
-    if (selectedArts.length !== 2) return null;
+    if (selectedArts.length < 2) return null;
     
-    const [art1, art2] = selectedArts;
+    // Función para obtener color según posición
+    const getColorScheme = (index) => {
+      const schemes = [
+        { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', tag: 'bg-blue-100 text-blue-800' },
+        { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-600', tag: 'bg-purple-100 text-purple-800' },
+        { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600', tag: 'bg-green-100 text-green-800' },
+        { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-600', tag: 'bg-orange-100 text-orange-800' }
+      ];
+      return schemes[index] || schemes[0];
+    };
+
+    // Función para analizar similitudes
+    const findSimilarities = () => {
+      const similarities = [];
+      const campos = ['paisProcedencia', 'tipoContacto', 'demandasFisicas', 'tipo', 'focus'];
+      
+      campos.forEach(campo => {
+        const valores = selectedArts.map(art => art[campo]).filter(Boolean);
+        const valoresUnicos = [...new Set(valores)];
+        
+        if (valoresUnicos.length === 1 && valores.length === selectedArts.length) {
+          const nombreCampo = {
+            paisProcedencia: 'origen',
+            tipoContacto: 'tipo de contacto',
+            demandasFisicas: 'demandas físicas',
+            tipo: 'tipo',
+            focus: 'focus'
+          };
+          similarities.push(`Todas comparten el mismo ${nombreCampo[campo]}: ${valoresUnicos[0]}`);
+        }
+      });
+
+      if (similarities.length === 0) {
+        similarities.push('Estilos muy diversos, ideal para comparar diferentes enfoques marciales');
+      }
+
+      return similarities;
+    };
+
+    // Función para analizar diferencias principales
+    const findDifferences = () => {
+      const differences = [];
+      const campos = ['paisProcedencia', 'tipoContacto', 'demandasFisicas', 'tipo', 'focus'];
+      
+      campos.forEach(campo => {
+        const valores = selectedArts.map(art => art[campo] || 'No especificado');
+        const valoresUnicos = [...new Set(valores)];
+        
+        if (valoresUnicos.length > 1) {
+          const nombreCampo = {
+            paisProcedencia: 'Origen',
+            tipoContacto: 'Contacto',
+            demandasFisicas: 'Demandas',
+            tipo: 'Tipo',
+            focus: 'Focus'
+          };
+          differences.push(`${nombreCampo[campo]}: ${valoresUnicos.join(' vs ')}`);
+        }
+      });
+
+      return differences;
+    };
     
     return (
       <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">🥊 Comparación de Artes Marciales</h2>
+          <h2 className="text-3xl font-bold text-gray-800">
+            🥊 Comparación de {selectedArts.length} Artes Marciales
+          </h2>
           <button
             onClick={() => setCurrentView('lista')}
             className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
@@ -955,143 +1030,91 @@ function AuthenticatedApp() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Arte Marcial 1 */}
-          <div className="border-2 border-blue-200 rounded-xl p-6 bg-blue-50">
-            <h3 className="text-2xl font-bold text-center mb-6 text-blue-600">{art1.nombre}</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-3 text-sm">
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Origen:</span>
-                  <p className="text-gray-900">{art1.paisProcedencia}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Época:</span>
-                  <p className="text-gray-900">{art1.edadOrigen || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Tipo:</span>
-                  <p className="text-gray-900">{art1.tipo || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Contacto:</span>
-                  <p className="text-gray-900">{art1.tipoContacto || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Demandas físicas:</span>
-                  <p className="text-gray-900">{art1.demandasFisicas || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Focus:</span>
-                  <p className="text-gray-900">{art1.focus || 'No especificado'}</p>
+        {/* Grid responsivo para 2-4 artes marciales */}
+        <div className={`grid gap-8 mb-8 ${
+          selectedArts.length === 2 ? 'grid-cols-1 lg:grid-cols-2' :
+          selectedArts.length === 3 ? 'grid-cols-1 lg:grid-cols-3' :
+          'grid-cols-1 lg:grid-cols-2 xl:grid-cols-4'
+        }`}>
+          {selectedArts.map((art, index) => {
+            const colorScheme = getColorScheme(index);
+            return (
+              <div key={art._id} className={`border-2 ${colorScheme.border} rounded-xl p-6 ${colorScheme.bg}`}>
+                <h3 className={`text-2xl font-bold text-center mb-6 ${colorScheme.text}`}>
+                  {art.nombre}
+                </h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">Origen:</span>
+                      <p className="text-gray-900">{art.paisProcedencia}</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">Época:</span>
+                      <p className="text-gray-900">{art.edadOrigen || 'No especificado'}</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">Tipo:</span>
+                      <p className="text-gray-900">{art.tipo || 'No especificado'}</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">Contacto:</span>
+                      <p className="text-gray-900">{art.tipoContacto || 'No especificado'}</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">Demandas físicas:</span>
+                      <p className="text-gray-900">{art.demandasFisicas || 'No especificado'}</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg">
+                      <span className="font-medium text-gray-700">Focus:</span>
+                      <p className="text-gray-900">{art.focus || 'No especificado'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Historia en comparación */}
+                  {art.historia && (
+                    <div className="bg-white p-4 rounded-lg">
+                      <span className="font-medium text-gray-700 block mb-2">Historia:</span>
+                      <p className="text-sm text-gray-600 italic max-h-24 overflow-y-auto">
+                        "{art.historia}"
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Fortalezas */}
+                  {art.fortalezas && art.fortalezas.length > 0 && (
+                    <div className="bg-white p-4 rounded-lg">
+                      <span className="font-medium text-gray-700 block mb-2">
+                        Fortalezas ({art.fortalezas.length}):
+                      </span>
+                      <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
+                        {art.fortalezas.map((f, i) => (
+                          <span key={i} className={`${colorScheme.tag} px-2 py-1 rounded text-xs`}>
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              {art1.fortalezas && art1.fortalezas.length > 0 && (
-                <div className="bg-white p-4 rounded-lg">
-                  <span className="font-medium text-gray-700 block mb-2">Fortalezas:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {art1.fortalezas.map((f, i) => (
-                      <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{f}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Arte Marcial 2 */}
-          <div className="border-2 border-purple-200 rounded-xl p-6 bg-purple-50">
-            <h3 className="text-2xl font-bold text-center mb-6 text-purple-600">{art2.nombre}</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-3 text-sm">
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Origen:</span>
-                  <p className="text-gray-900">{art2.paisProcedencia}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Época:</span>
-                  <p className="text-gray-900">{art2.edadOrigen || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Tipo:</span>
-                  <p className="text-gray-900">{art2.tipo || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Contacto:</span>
-                  <p className="text-gray-900">{art2.tipoContacto || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Demandas físicas:</span>
-                  <p className="text-gray-900">{art2.demandasFisicas || 'No especificado'}</p>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <span className="font-medium text-gray-700">Focus:</span>
-                  <p className="text-gray-900">{art2.focus || 'No especificado'}</p>
-                </div>
-              </div>
-              
-              {art2.fortalezas && art2.fortalezas.length > 0 && (
-                <div className="bg-white p-4 rounded-lg">
-                  <span className="font-medium text-gray-700 block mb-2">Fortalezas:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {art2.fortalezas.map((f, i) => (
-                      <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">{f}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* Análisis de comparación */}
+        {/* Análisis de comparación mejorado para múltiples artes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-green-50 p-6 rounded-xl border border-green-200">
             <h4 className="font-bold text-green-800 mb-4 text-lg flex items-center">
-              ✅ Similitudes
+              ✅ Similitudes Encontradas
             </h4>
             <ul className="text-sm text-green-700 space-y-2">
-              {art1.paisProcedencia === art2.paisProcedencia && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Ambas originarias de {art1.paisProcedencia}
+              {findSimilarities().map((similarity, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 mt-2 flex-shrink-0"></span>
+                  <span>{similarity}</span>
                 </li>
-              )}
-              {art1.tipoContacto === art2.tipoContacto && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Mismo tipo de contacto: {art1.tipoContacto}
-                </li>
-              )}
-              {art1.demandasFisicas === art2.demandasFisicas && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Mismas demandas físicas: {art1.demandasFisicas}
-                </li>
-              )}
-              {art1.tipo === art2.tipo && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Mismo tipo: {art1.tipo}
-                </li>
-              )}
-              {art1.focus === art2.focus && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Mismo focus: {art1.focus}
-                </li>
-              )}
-              {art1.paisProcedencia !== art2.paisProcedencia && 
-               art1.tipoContacto !== art2.tipoContacto && 
-               art1.demandasFisicas !== art2.demandasFisicas && 
-               art1.tipo !== art2.tipo && 
-               art1.focus !== art2.focus && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  Estilos muy diferentes, ideal para comparar enfoques distintos
-                </li>
-              )}
+              ))}
             </ul>
           </div>
 
@@ -1099,45 +1122,52 @@ function AuthenticatedApp() {
             <h4 className="font-bold text-blue-800 mb-4 text-lg flex items-center">
               🔄 Diferencias Principales
             </h4>
-            <ul className="text-sm text-blue-700 space-y-2">
-              {art1.paisProcedencia !== art2.paisProcedencia && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  Origen: {art1.paisProcedencia} vs {art2.paisProcedencia}
+            <ul className="text-sm text-blue-700 space-y-2 max-h-48 overflow-y-auto">
+              {findDifferences().map((difference, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 mt-2 flex-shrink-0"></span>
+                  <span>{difference}</span>
                 </li>
-              )}
-              {art1.tipoContacto !== art2.tipoContacto && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  Contacto: {art1.tipoContacto || 'No especificado'} vs {art2.tipoContacto || 'No especificado'}
-                </li>
-              )}
-              {art1.demandasFisicas !== art2.demandasFisicas && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  Demandas: {art1.demandasFisicas || 'No especificado'} vs {art2.demandasFisicas || 'No especificado'}
-                </li>
-              )}
-              {art1.tipo !== art2.tipo && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  Tipo: {art1.tipo || 'No especificado'} vs {art2.tipo || 'No especificado'}
-                </li>
-              )}
-              {art1.focus !== art2.focus && (
-                <li className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  Focus: {art1.focus || 'No especificado'} vs {art2.focus || 'No especificado'}
-                </li>
-              )}
+              ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Estadísticas de comparación */}
+        <div className="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
+          <h4 className="font-bold text-gray-800 mb-4 text-lg">📊 Estadísticas de Comparación</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="bg-white p-4 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">
+                {new Set(selectedArts.map(art => art.paisProcedencia)).size}
+              </div>
+              <div className="text-sm text-gray-600">Países diferentes</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">
+                {new Set(selectedArts.map(art => art.tipo)).size}
+              </div>
+              <div className="text-sm text-gray-600">Tipos diferentes</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">
+                {selectedArts.filter(art => art.historia && art.historia.length > 0).length}
+              </div>
+              <div className="text-sm text-gray-600">Con historia</div>
+            </div>
+            <div className="bg-white p-4 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">
+                {selectedArts.reduce((total, art) => total + (art.fortalezas ? art.fortalezas.length : 0), 0)}
+              </div>
+              <div className="text-sm text-gray-600">Fortalezas totales</div>
+            </div>
           </div>
         </div>
       </div>
     );
   };
 
-  // Panel de administración mejorado
+  // Panel de administración
   const AdminPanel = () => {
     const [adminView, setAdminView] = useState('stats');
 
@@ -1175,9 +1205,9 @@ function AuthenticatedApp() {
 
           <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200">
             <div className="text-4xl font-bold text-orange-600 mb-2">
-              {martialArts.filter(art => art.videos && art.videos.length > 0).length}
+              {martialArts.filter(art => art.historia && art.historia.length > 0).length}
             </div>
-            <div className="text-orange-800 font-medium">Con Videos</div>
+            <div className="text-orange-800 font-medium">Con Historia</div>
           </div>
         </div>
 
@@ -1297,6 +1327,14 @@ function AuthenticatedApp() {
                     </div>
                   </div>
 
+                  {/* Historia - NUEVA SECCIÓN */}
+                  {art.historia && (
+                    <div className="mt-6 p-4 bg-orange-50 rounded-xl border border-orange-200">
+                      <h4 className="font-semibold text-orange-800 mb-2">📚 Historia</h4>
+                      <p className="text-sm text-orange-900 italic leading-relaxed">"{art.historia}"</p>
+                    </div>
+                  )}
+
                   {/* Filosofía */}
                   {art.filosofia && (
                     <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
@@ -1367,7 +1405,7 @@ function AuthenticatedApp() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header mejorado */}
+      {/* Header */}
       <header className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
@@ -1394,7 +1432,7 @@ function AuthenticatedApp() {
         </div>
       </header>
 
-      {/* Mensajes mejorados */}
+      {/* Mensajes */}
       {message && (
         <div className="max-w-7xl mx-auto px-4 pt-4">
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative shadow-sm">
@@ -1429,7 +1467,7 @@ function AuthenticatedApp() {
         </div>
       )}
 
-      {/* Navegación mejorada */}
+      {/* Navegación */}
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-6">
           <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -1460,20 +1498,20 @@ function AuthenticatedApp() {
 
               <button
                 onClick={() => {
-                  if (selectedArts.length === 2) {
+                  if (selectedArts.length >= 2) {
                     setCurrentView('comparacion');
                   } else {
-                    setMessage('Selecciona exactamente 2 artes marciales para comparar');
+                    setMessage('Selecciona al menos 2 artes marciales para comparar');
                     setTimeout(() => setMessage(''), 3000);
                   }
                 }}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  selectedArts.length === 2
+                  selectedArts.length >= 2
                     ? 'bg-purple-600 text-white shadow-lg hover:bg-purple-700'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                🥊 Comparar ({selectedArts.length}/2)
+                🥊 Comparar ({selectedArts.length}/4)
               </button>
 
               {selectedArts.length > 0 && (
@@ -1513,7 +1551,7 @@ function AuthenticatedApp() {
           )
         ) : (
           <>
-            {/* Búsqueda mejorada */}
+            {/* Búsqueda */}
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-6">
               <div className="relative">
                 <input
@@ -1539,7 +1577,7 @@ function AuthenticatedApp() {
               )}
             </div>
 
-            {/* Lista de artes marciales con grid responsive - LAYOUT DE CARDS CORREGIDO */}
+            {/* Lista de artes marciales */}
             {filteredArts.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-6xl mb-6">🥋</div>
@@ -1577,7 +1615,7 @@ function AuthenticatedApp() {
         )}
       </main>
 
-      {/* Footer mejorado */}
+      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-600">
@@ -1593,14 +1631,14 @@ function AuthenticatedApp() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-800 mb-2">🎯 Selección</h3>
-              <p>{selectedArts.length}/2 artes seleccionadas</p>
+              <p>{selectedArts.length}/4 artes seleccionadas</p>
               <p>{filteredArts.length} mostradas actualmente</p>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Modal mejorado */}
+      {/* Modal */}
       <MartialArtModal
         isOpen={showModal}
         onClose={() => {
@@ -1629,8 +1667,6 @@ function App() {
 // Componente de contenido que maneja la autenticación
 function AppContent({ showLogin, setShowLogin }) {
   const { isAuthenticated, isLoading } = useAuth();
-
-  console.log('🔄 AppContent render - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
 
   if (isLoading) {
     return (
