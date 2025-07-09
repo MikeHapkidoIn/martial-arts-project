@@ -5,13 +5,13 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
 // Helper function para enviar token en cookie
-const sendTokenResponse = (user, statusCode, res, message = '') => {
+const sendTokenResponse = async (user, statusCode, res, message = '') => {
   // Crear token
   const token = user.getSignedJwtToken();
   const refreshToken = user.getRefreshToken();
 
   // Guardar refresh token en BD
-  user.save();
+  await user.save();
 
   // Opciones de cookie
   const options = {
@@ -25,7 +25,7 @@ const sendTokenResponse = (user, statusCode, res, message = '') => {
 
   // Actualizar último login
   user.lastLogin = new Date();
-  user.save();
+  await user.save();
 
   // Limpiar campos sensibles antes de enviar
   const userResponse = {

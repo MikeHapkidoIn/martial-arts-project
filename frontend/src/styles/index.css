@@ -163,61 +163,165 @@ header p {
   margin-top: 0.5rem;
 }
 
-/* Navegación moderna */
-.nav-container {
-  background: rgba(15, 15, 35, 0.6);
+/* Navegación moderna - Sobrescribir estilos de Tailwind */
+.bg-white.p-6.rounded-xl.shadow-lg.border.border-gray-200.mb-6 {
+  background: rgba(15, 15, 35, 0.6) !important;
   backdrop-filter: blur(15px);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: var(--radius-2xl);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: var(--radius-2xl) !important;
+  padding: var(--spacing-lg) !important;
+  margin-bottom: var(--spacing-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
 }
 
-.nav-container button {
-  position: relative;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  font-size: 0.95rem;
-  overflow: hidden;
+/* Contenedor de botones de navegación */
+.bg-white .flex.flex-wrap.gap-3,
+.bg-white .flex.flex-wrap.gap-4 {
+  gap: 20px !important; /* Separación amplia de 20px entre botones */
+  align-items: center !important;
+  flex-wrap: wrap !important;
 }
 
-.nav-container button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left var(--transition-slow);
+/* Estilos base para TODOS los botones de navegación */
+.bg-white button.px-6,
+.bg-white button[class*="px-6"] {
+  position: relative !important;
+  padding: 0.875rem 1.5rem !important; /* Padding más generoso */
+  border: none !important;
+  border-radius: var(--radius-xl) !important; /* Radio más redondeado */
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all var(--transition-normal) !important;
+  font-size: 0.95rem !important;
+  overflow: hidden !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 48px !important; /* Altura mínima para consistencia */
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid transparent !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
-.nav-container button:hover::before {
-  left: 100%;
+/* Efecto de brillo deslizante para botones de navegación */
+.bg-white button.px-6::before,
+.bg-white button[class*="px-6"]::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent) !important;
+  transition: left 0.6s ease !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
 }
 
-/* Botones activos con gradientes */
-.nav-container button.bg-blue-600 {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: var(--shadow-glow);
+.bg-white button.px-6:hover::before,
+.bg-white button[class*="px-6"]:hover::before {
+  left: 100% !important;
 }
 
-.nav-container button.bg-green-600 {
-  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
-  color: white;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+/* Efecto hover general para botones de navegación */
+.bg-white button.px-6:hover,
+.bg-white button[class*="px-6"]:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.2),
+    0 4px 6px -2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
-.nav-container button.bg-purple-600 {
-  background: linear-gradient(135deg, #8b5cf6 0%, var(--secondary) 100%);
-  color: white;
-  box-shadow: var(--shadow-glow-pink);
+.bg-white button.px-6:active,
+.bg-white button[class*="px-6"]:active {
+  transform: translateY(0) scale(0.98) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* Botón Lista de Artes (azul) - activo */
+.bg-white button.bg-blue-600,
+.bg-white button.scale-105 {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 
+    var(--shadow-glow),
+    0 8px 16px -4px rgba(99, 102, 241, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Botón Administración (verde) - activo */
+.bg-white button.bg-green-600 {
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%) !important;
+  color: white !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 
+    0 0 20px rgba(16, 185, 129, 0.4),
+    0 8px 16px -4px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Botón Comparar (púrpura) - activo */
+.bg-white button.bg-purple-600 {
+  background: linear-gradient(135deg, #8b5cf6 0%, var(--secondary) 100%) !important;
+  color: white !important;
+  border-color: rgba(139, 92, 246, 0.4) !important;
+  box-shadow: 
+    var(--shadow-glow-pink),
+    0 8px 16px -4px rgba(236, 72, 153, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Botones inactivos (gris) */
+.bg-white button.bg-gray-100 {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.bg-white button.bg-gray-100:hover {
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.9) 0%, rgba(71, 85, 105, 0.9) 100%) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Botón deshabilitado */
+.bg-white button.text-gray-400 {
+  background: linear-gradient(135deg, rgba(55, 65, 81, 0.6) 0%, rgba(75, 85, 99, 0.6) 100%) !important;
+  color: #6b7280 !important;
+  border-color: rgba(75, 85, 99, 0.3) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.bg-white button.text-gray-400:hover {
+  transform: none !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Botones de acción secundaria (rojo para limpiar) */
+.bg-white button.bg-red-100 {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(220, 38, 38, 0.8) 100%) !important;
+  color: white !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 
+    0 0 20px rgba(239, 68, 68, 0.3),
+    0 8px 16px -4px rgba(239, 68, 68, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.bg-white button.bg-red-100:hover {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.9) 0%, rgba(185, 28, 28, 0.9) 100%) !important;
 }
 
 /* Filtros modernos */
@@ -562,7 +666,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Responsive mejorado */
+/* Responsive mejorado para navegación */
 @media (max-width: 768px) {
   header h1 {
     font-size: 2rem;
@@ -573,13 +677,21 @@ html {
     gap: var(--spacing-lg);
   }
   
-  .nav-container {
-    padding: var(--spacing-md);
+  .bg-white.p-6.rounded-xl.shadow-lg.border.border-gray-200.mb-6 {
+    padding: var(--spacing-md) !important;
   }
   
-  .nav-container button {
-    font-size: 0.85rem;
-    padding: var(--spacing-sm) var(--spacing-md);
+  .bg-white .flex.flex-wrap.gap-3,
+  .bg-white .flex.flex-wrap.gap-4 {
+    gap: 12px !important; /* Reducir gap en móviles pero mantener separación visible */
+    justify-content: center !important;
+  }
+  
+  .bg-white button.px-6,
+  .bg-white button[class*="px-6"] {
+    font-size: 0.8rem !important;
+    padding: 0.75rem 1rem !important; /* Reducir padding en móviles */
+    min-height: 42px !important;
   }
   
   .arte-card {
@@ -592,6 +704,21 @@ html {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
     padding: 0 var(--spacing-sm);
+  }
+  
+  .bg-white .flex.flex-wrap.gap-3,
+  .bg-white .flex.flex-wrap.gap-4 {
+    flex-direction: column !important;
+    gap: 15px !important; /* Gap más amplio incluso en móviles pequeños */
+    align-items: stretch !important;
+  }
+  
+  .bg-white button.px-6,
+  .bg-white button[class*="px-6"] {
+    width: 100% !important;
+    font-size: 0.85rem !important;
+    padding: 0.875rem 1rem !important;
+    min-height: 48px !important;
   }
   
   .arte-card {
