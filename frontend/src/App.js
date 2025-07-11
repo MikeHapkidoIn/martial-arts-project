@@ -230,18 +230,18 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 // Modal para Crear/Editar Arte Marcial
 const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave, isLoading }) => {
   const [formData, setFormData] = useState({
-    nombre: '',
-    paisProcedencia: '',
-    edadOrigen: '',
-    tipo: '',
-    focus: '',
-    tipoContacto: '',
-    demandasFisicas: '',
-    filosofia: '',
-    historia: '', // NUEVO CAMPO
-    fortalezas: [],
-    videos: []
-  });
+  nombre: '',
+  paisProcedencia: '',
+  edadOrigen: '',
+  tipo: 'Arte marcial tradicional',        
+  focus: 'Combinado',                      
+  tipoContacto: 'Semi-contacto',           
+  demandasFisicas: 'Media',                
+  filosofia: '',
+  historia: '',
+  fortalezas: [],
+  videos: []
+});
   const [newFortaleza, setNewFortaleza] = useState('');
   const [newVideo, setNewVideo] = useState('');
 
@@ -263,18 +263,18 @@ const MartialArtModal = ({ isOpen, onClose, artToEdit, onSave, isLoading }) => {
         });
       } else {
         setFormData({
-          nombre: '',
-          paisProcedencia: '',
-          edadOrigen: '',
-          tipo: '',
-          focus: '',
-          tipoContacto: '',
-          demandasFisicas: '',
-          filosofia: '',
-          historia: '', // NUEVO CAMPO
-          fortalezas: [],
-          videos: []
-        });
+           nombre: '',
+           paisProcedencia: '',
+           edadOrigen: '',
+           tipo: 'Arte marcial tradicional',        // ← VALOR POR DEFECTO
+           focus: 'Combinado',                      // ← VALOR POR DEFECTO
+           tipoContacto: 'Semi-contacto',           // ← VALOR POR DEFECTO
+           demandasFisicas: 'Media',                // ← VALOR POR DEFECTO
+           filosofia: '',
+           historia: '',
+           fortalezas: [],
+           videos: []
+          });
       }
       setNewFortaleza('');
       setNewVideo('');
@@ -627,15 +627,44 @@ function AuthenticatedApp() {
     setFilteredArts(filtered);
   }, [martialArts, searchTerm]);
 
-  // Funciones CRUD
+ 
+ // Funciones CRUD
   const fetchMartialArts = async () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('🔄 Iniciando carga de artes marciales...');
+      console.log('🔗 URL base:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+      
       const response = await martialArtsAPI.getAll();
-      setMartialArts(response.data || []);
+      console.log('✅ Respuesta exitosa:', response);
+      
+      // Manejar diferentes estructuras de respuesta
+      let artesData = [];
+      if (response && response.data) {
+        if (Array.isArray(response.data)) {
+          artesData = response.data;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          artesData = response.data.data;
+        }
+      } else if (Array.isArray(response)) {
+        artesData = response;
+      }
+      
+      console.log(`✅ Artes marciales encontradas: ${artesData.length}`);
+      setMartialArts(artesData);
+      
     } catch (err) {
-      setError('Error al cargar las artes marciales: ' + (err.response?.data?.message || err.message));
+      console.error('❌ Error completo:', err);
+      console.error('❌ Error message:', err.message);
+      console.error('❌ Error status:', err.response?.status);
+      console.error('❌ Error data:', err.response?.data);
+      console.error('❌ Request URL:', err.config?.url);
+      console.error('❌ Request method:', err.config?.method);
+      
+      setError(`Error al cargar las artes marciales: ${err.response?.status || 'Sin respuesta'} - ${err.response?.data?.message || err.message}`);
+      setMartialArts([]);
     } finally {
       setLoading(false);
     }
@@ -691,6 +720,8 @@ function AuthenticatedApp() {
       setTimeout(() => { setMessage(''); setError(null); }, 3000);
     }
   };
+
+  
 
   const initializeData = async () => {
     try {

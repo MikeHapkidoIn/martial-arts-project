@@ -118,11 +118,14 @@ const authAPI = {
   }
 };
 
+
+
 // Servicios de artes marciales
 const martialArtsAPI = {
-  // Obtener todas las artes marciales
+  // Obtener todas las artes marciales 
   getAll: async (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
+    const finalParams = { ...params, limit: 100 };
+    const queryString = new URLSearchParams(finalParams).toString();
     const url = queryString ? `/martial-arts?${queryString}` : '/martial-arts';
     return await axiosInstance.get(url);
   },
@@ -138,16 +141,32 @@ const martialArtsAPI = {
     const url = queryString ? `/martial-arts/search/${term}?${queryString}` : `/martial-arts/search/${term}`;
     return await axiosInstance.get(url);
   },
-
   // Comparar
   compare: async (ids) => {
     return await axiosInstance.post('/martial-arts/compare', { ids });
   },
 
   // Crear nueva (requiere autenticación)
-  create: async (artData) => {
-    return await axiosInstance.post('/martial-arts', artData);
-  },
+create: async (artData) => {
+  console.log('📤 Datos que se envían al backend:', artData);
+  console.log('📤 Tipo de datos:', typeof artData);
+  console.log('📤 Claves del objeto:', Object.keys(artData));
+  
+  try {
+    const response = await axiosInstance.post('/martial-arts', artData);
+    console.log('✅ Arte marcial creada exitosamente:', response);
+    return response;
+  } catch (error) {
+    console.error('❌ Error detallado al crear:', {
+  status: error.response?.status,
+  data: error.response?.data,
+  message: error.response?.data?.message,
+  errores: error.response?.data?.errors, // ← AÑADIR ESTA LÍNEA
+  enviado: artData
+});
+    throw error;
+  }
+},
 
   // Actualizar (requiere autenticación)
   update: async (id, artData) => {
